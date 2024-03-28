@@ -7,16 +7,6 @@ library(OpenMx)
 library(geepack)
 library(tidyverse)
 
-# Function to calculate power from non-centrality parameter
-ncp_power_function <- function(ncp, df, alpha = .0001){
-  critical_chi2 = qchisq(alpha, df, lower = FALSE)
-  if(abs(ncp) < .0001){
-    ncp = 0
-    }
-  power = pchisq(critical_chi2, df, ncp, lower = FALSE)
-  return(power)
-}
-
 # Function to simulate data
 dolan_simulation_function <- function(nrep = 500, # Number of repetitions
              alpha = .05, # Alpha for power
@@ -74,6 +64,46 @@ dolan_simulation_function(a = sqrt(c(.5, .6)), c = sqrt(c(.2, .1)),
                           e = sqrt(c(.3, .3)), ct = sqrt(c(0, .01, .0025)))
 
 
+# Additional functions for processing the output of the simulation
+
+# Function to calculate power from non-centrality parameter
+ncp_power_function <- function(ncp, df, alpha = .0001){
+  critical_chi2 = qchisq(alpha, df, lower = FALSE)
+  if(abs(ncp) < .0001){
+    ncp = 0
+  }
+  power = pchisq(critical_chi2, df, ncp, lower = FALSE)
+  return(power)
+}
+
+expSigma <- function(a,c,e,b,g) {
+  vA = 1
+  vC = 1
+  vE = 1
+  
+  # Phenotypic covariances for MZ and DZ
+  Smz = 2 * (g + a/2 + b/2)**2 * vA + (a * vA/2 + b * vA/2) * a + (a * vA/2+b * vA/2) * b + c**2 * vC + e**2 * vE
+  Sdz = 2 * (g + a/2 + b/2)**2 * vA + a**2 * vA/2 + b**2 * vA/2 + c**2 * vC + e**2 * vE
+  
+  expS = list(Smz = Smz, Sdz = Sdz)
+  return(expS)
+}
+
+# Use effect size function on the data sets
+
+# Load relevant data sets
+power_data <- read_csv("2024-02-19_power_largersample.csv")
+estimate_data <- read_csv("2024-02-19_estimates_largersample.csv")
+
+# Calculate effect size measures
+power_data_effect <- power_data %>%
+  mutate(Smz = expSigma(a, c, e, b, g)$Smz - 1,
+         Sdz = expSigma(a, c, e, b, g)$Sdz - 1)
+
+estimate_data_effect <- estimate_data %>%
+  mutate(Smz = expSigma(a, c, e, b, g)$Smz - 1,
+         Sdz = expSigma(a, c, e, b, g)$Sdz - 1)
+
 # ISSUES
 
 # Why do we round down the NCP?
@@ -83,3 +113,5 @@ dolan_simulation_function(a = sqrt(c(.5, .6)), c = sqrt(c(.2, .1)),
 # Why does the function say it's recursive when I start it without arguments?
 # Have a closer look at the number of rows and columns for final_power & final_estimates.
 # Make sure I can get out mx and gee regression results at the same time
+
+# Look at the exact conceptualization behind
