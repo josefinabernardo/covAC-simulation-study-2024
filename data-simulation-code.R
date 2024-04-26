@@ -6,13 +6,14 @@ library(MASS)
 library(OpenMx)
 library(geepack)
 library(tidyverse)
+library(gnomesims)
 
 # Define defaults outside of function
-default_a <- sqrt(c(.5, .6))
-default_c <- sqrt(c(.2, .1))
-default_e <- sqrt(c(.3, .3))
-default_ct <- sqrt(c(0, .01, .0025))
-default_si <- sqrt(c(0, .01, .0025))
+default_a <- sqrt(c(.4))
+default_c <- sqrt(c(.3))
+default_e <- sqrt(c(.3))
+default_ct <- sqrt(c(0, .0025, .01))
+default_si <- sqrt(c(0, .0025, .01))
 
 # Function to simulate data
 dolan_simulation_function <- function(nrep = 500, # Number of repetitions
@@ -20,15 +21,16 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
              cmethod = 'independence', # Gee Covariance Structure
              seed = NA, # Set a seed if desired
              standprs = FALSE, # Standardize the PRS
-             nmz = 3999, # Sample size monozygotic twins
-             ndz = 4001, # Sample size dizygotic twins
+             nmz = 4000, # Sample size monozygotic twins
+             ndz = 4000, # Sample size dizygotic twins
              a = default_a, # Additive genetic path coefficient
              c = default_c, # Shared environmental path coefficient
              e = default_e, # Unique environmental path coefficient
              ct = default_ct, # Cultural Transmission - Parent genotype to child phenotype
              si = default_si, # Sibling Interaction - Sibling 1 genotype to sibling 2 phenotype
              nloci = 100, # Number of diallelic loci
-             npgsloci = c(2, 5, 10, 15) # Number of loci comprising the PGS
+             npgsloci = c(2, 5, 10, 15), # Number of loci comprising the PGS
+             stzPRS = FALSE # Standardize the prs
     ){
   
       #Create all possible parameter combinations
@@ -36,7 +38,7 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
       
       # Only retain distinct combinations where A + C + E = 1
       filtered_combinations <- param_combinations %>%
-        filter(a^2 + c^2 + e^2 == 1) %>%
+        filter(round(a^2 + c^2 + e^2) == 1) %>%
         distinct()
       
       # Number of settings we iterate through
@@ -69,12 +71,12 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
       #################
       
       nloci = 100 # Number of diallelic loci
-      npgsloci = c(2, 5, 10, 15) # Number of loci comprising the PGS
+      #npgsloci = c(2, 5, 10, 15) # Number of loci comprising the PGS
+      npgsloci = 10
       
-      
-      for (npgs_i in seq_along(npgsloci)) {
+      for (ngp_i in seq_along(npgsloci)) {
         ngp = nloci[ngp_i] # number of loci comprising polygenic score pgs (0 <= npg <= ng).
-        p_pgs=p_pgs_[ngp_i]  # percentage of genetic variance explained by pgs 
+        p_pgs=p_pgs[ngp_i]  # percentage of genetic variance explained by pgs 
         
         print(paste('Running simulation proportion of genetic variance explained by the PGS is:', p_pgs, "."))
         
@@ -83,19 +85,20 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
         #                         of .4*(npg/ng) is due to the PRS
         #                         Given var(PH) = 1 (assuming no covAC), the PRS explained {.4*(npg/ng)}/1 of the phenotypic variance 
         
-        for (i in seq_len(nset)) {
-          par_a <- filtered_combinations$par_a[i]
-          par_c <- filtered_combinations$par_c[i]
-          par_e <- filtered_combinations$par_e[i]
-          par_g <- filtered_combinations$par_g[i]
-          par_b <- filtered_combinations$par_b[i]
-          par_x <- filtered_combinations$par_x[i]
-          ii=ii+1 # count sets in factorial design
-          counter=counter+1 # count sets overall
+        for (i in 1:n_set) {
+          par_a <- filtered_combinations$a[i]
+          par_c <- filtered_combinations$c[i]
+          par_e <- filtered_combinations$e[i]
+          par_g <- filtered_combinations$ct[i]
+          par_b <- filtered_combinations$si[i]
+          #par_x <- filtered_combinations$x[i]
+          par_x <- 0
+          counter_within = counter_within + 1 # count sets in factorial design
+          counter_overall = counter_overall + 1 # count sets overall
           #
-          print(c(counter))
+          print(c(counter_overall))
           #
-          setkeep[ii,1:10]=c(nmz,ndz, par_a, par_c, par_e, par_g, par_b, par_x, p_pgs, p_A)
+          setkeep[counter_within,1:10] = c(nmz, ndz, par_a, par_c, par_e, par_g, par_b, par_x, p_pgs, p_A)
           #colnames(setkeep) = c('nmz','ndz','a','c','e','g','b','x','prs','A')
           #
           VA1=p_A; VP=p_pgs;VC=1; VE=1 # .... VA1+VP = par_as^2
@@ -315,62 +318,55 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           # dz 1 pgsmf test ... test of mpgst does not apply given 1 dz
           # model M1dz=lm(pht1~pgsmf+pgst1, data=phdatdz) ... 1dz test of pgsmf
           tmp=summary(eM1dz)$coefficients
-          eM1dzest=tmp[2,1]; eM1dzse=tmp[2,2]; eM1dztest=tmp[2,3]**2; eM1dzpw=powchi(alpha,1,eM1dztest)  # ....**2 t to chi2
-          reskeep[ii,1:3]=c(eM1dzest,eM1dzse,eM1dzpw) # est st and power
+          eM1dzest=tmp[2,1]; eM1dzse=tmp[2,2]; eM1dztest=tmp[2,3]**2; eM1dzpw=gnome_power(alpha,1,eM1dztest)  # ....**2 t to chi2
+          reskeep[counter_within,1:3]=c(eM1dzest,eM1dzse,eM1dzpw) # est st and power
           #
           # dz 1+2 test power
           # model geeM1dzL=geeglm(ph~pgsmf+pgst, id=famnr, corstr=cmethod, data=phdatdzL) #  wald test is t^2 already
           # pgsmf
           tmp=summary(egeeM1dzL)$coefficients
-          egeeM1dzest=tmp[2,1]; egeeM1dzse=tmp[2,2]; egeeM1dztest=tmp[2,3]**1; egeeM1dzp=tmp[2,4]; egeeM1dzpw=powchi(alpha,1,egeeM1dztest)
-          reskeep[ii,4:6]=c(egeeM1dzest,egeeM1dzse,egeeM1dzpw) # est st and power
+          egeeM1dzest=tmp[2,1]; egeeM1dzse=tmp[2,2]; egeeM1dztest=tmp[2,3]**1; egeeM1dzp=tmp[2,4]; egeeM1dzpw=gnome_power(alpha,1,egeeM1dztest)
+          reskeep[counter_within,4:6]=c(egeeM1dzest,egeeM1dzse,egeeM1dzpw) # est st and power
           # dz 1+2 test power
           #geeM2dzL=geeglm(ph~mpgst+pgst, id=famnr, corstr=cmethod,data=phdatdzL)#)$coefficients  #   
           # mpgst
           tmp=summary(egeeM2dzL)$coefficients
-          egeeM2dzest=tmp[2,1]; egeeM2dzse=tmp[2,2]; egeeM2dztest=tmp[2,3]**1; egeeM2dzp=tmp[2,4]; egeeM2dzpw=powchi(alpha,1,egeeM2dztest)
-          reskeep[ii,7:9]=c(egeeM2dzest,egeeM2dzse,egeeM2dzpw) # est st and power
+          egeeM2dzest=tmp[2,1]; egeeM2dzse=tmp[2,2]; egeeM2dztest=tmp[2,3]**1; egeeM2dzp=tmp[2,4]; egeeM2dzpw=gnome_power(alpha,1,egeeM2dztest)
+          reskeep[counter_within,7:9]=c(egeeM2dzest,egeeM2dzse,egeeM2dzpw) # est st and power
           #
           # geeM3dzL=geeglm(ph~pgsmf+mpgst+pgst, id=famnr, corstr=cmethod,data=phdatdzL)#)$coefficients  #   
           # pgsmf in presence of mfpgs
           tmp=summary(egeeM3dzL)$coefficients
-          egeeM3dzest1=tmp[2,1]; egeeM3dzse1=tmp[2,2]; egeeM3dztest1=tmp[2,3]**1; egeeM3dzp1=tmp[2,4]; egeeM3dzpw1=powchi(alpha,1,egeeM3dztest1)
-          reskeep[ii,10:12]=c(egeeM3dzest1,egeeM3dzse1,egeeM3dzpw1) # est st and power
+          egeeM3dzest1=tmp[2,1]; egeeM3dzse1=tmp[2,2]; egeeM3dztest1=tmp[2,3]**1; egeeM3dzp1=tmp[2,4]; egeeM3dzpw1=gnome_power(alpha,1,egeeM3dztest1)
+          reskeep[counter_within,10:12]=c(egeeM3dzest1,egeeM3dzse1,egeeM3dzpw1) # est st and power
           # mpgst
-          egeeM3dzest2=tmp[3,1]; egeeM3dzse2=tmp[3,2]; egeeM3dztest2=tmp[3,3]**1; egeeM3dzp2=tmp[3,4]; egeeM3dzpw2=powchi(alpha,1,egeeM3dztest2)
-          reskeep[ii,13:15]=c(egeeM3dzest2,egeeM3dzse2,egeeM3dzpw2) # est st and power
+          egeeM3dzest2=tmp[3,1]; egeeM3dzse2=tmp[3,2]; egeeM3dztest2=tmp[3,3]**1; egeeM3dzp2=tmp[3,4]; egeeM3dzpw2=gnome_power(alpha,1,egeeM3dztest2)
+          reskeep[counter_within,13:15]=c(egeeM3dzest2,egeeM3dzse2,egeeM3dzpw2) # est st and power
           #
           # mz dz 1+2 test power
           #egeeM1mzdzL=geeglm(ph~pgsmf+pgst, id=famnr, corstr=cmethod,data=phdatL_e)#)$coefficients #
           # pgsmf
           tmp=summary(egeeM1mzdzL)$coefficients
-          egeeM1mzdzest=tmp[2,1]; egeeM1mzdzse=tmp[2,2]; egeeM1mzdztest=tmp[2,3]**1; egeeM1mzdzp=tmp[2,4]; egeeM1mzdzpw=powchi(alpha,1,egeeM1mzdztest)
-          reskeep[ii,16:18]=c(egeeM1mzdzest,egeeM1mzdzse,egeeM1mzdzpw) # est st and power
+          egeeM1mzdzest=tmp[2,1]; egeeM1mzdzse=tmp[2,2]; egeeM1mzdztest=tmp[2,3]**1; egeeM1mzdzp=tmp[2,4]; egeeM1mzdzpw=gnome_power(alpha,1,egeeM1mzdztest)
+          reskeep[counter_within,16:18]=c(egeeM1mzdzest,egeeM1mzdzse,egeeM1mzdzpw) # est st and power
           # dz 1+2 test power
           # egeeM2mzdzL=geeglm(ph~mpgst+pgst, id=famnr, corstr=cmethod,data=phdatL_e)#)$coefficients  #   
           # mpgst
           tmp=summary(egeeM2mzdzL)$coefficients
-          egeeM2mzdzest=tmp[2,1]; egeeM2mzdzse=tmp[2,2]; egeeM2mzdztest=tmp[2,3]**1; egeeM2mzdzp=tmp[2,4]; egeeM2mzdzpw=powchi(alpha,1,egeeM2mzdztest)
-          reskeep[ii,19:21]=c(egeeM2mzdzest,egeeM2mzdzse,egeeM2mzdzpw) # est st and power
+          egeeM2mzdzest=tmp[2,1]; egeeM2mzdzse=tmp[2,2]; egeeM2mzdztest=tmp[2,3]**1; egeeM2mzdzp=tmp[2,4]; egeeM2mzdzpw=gnome_power(alpha,1,egeeM2mzdztest)
+          reskeep[counter_within,19:21]=c(egeeM2mzdzest,egeeM2mzdzse,egeeM2mzdzpw) # est st and power
           #
           # egeeM3mzdzL=geeglm(ph~pgsmf+mpgst+pgst, id=famnr, corstr=cmethod,data=phdatL_e)#)$coefficients  # #   
           # pgsmf in presence of mfpgs
           tmp=summary(egeeM3mzdzL)$coefficients
-          egeeM3mzdzest1=tmp[2,1]; egeeM3mzdzse1=tmp[2,2]; egeeM3mzdztest1=tmp[2,3]**1; egeeM3mzdzp1=tmp[2,4]; egeeM3mzdzpw1=powchi(alpha,1,egeeM3mzdztest1)
-          reskeep[ii,22:24]=c(egeeM3mzdzest1,egeeM3mzdzse1,egeeM3mzdzpw1) # est st and power
+          egeeM3mzdzest1=tmp[2,1]; egeeM3mzdzse1=tmp[2,2]; egeeM3mzdztest1=tmp[2,3]**1; egeeM3mzdzp1=tmp[2,4]; egeeM3mzdzpw1=gnome_power(alpha,1,egeeM3mzdztest1)
+          reskeep[counter_within,22:24]=c(egeeM3mzdzest1,egeeM3mzdzse1,egeeM3mzdzpw1) # est st and power
           # mpgst
-          egeeM3mzdzest2=tmp[3,1]; egeeM3mzdzse2=tmp[3,2]; egeeM3mzdztest2=tmp[3,3]**1; egeeM3mzdzp2=tmp[3,4]; egeeM3mzdzpw2=powchi(alpha,1,egeeM3mzdztest2)
-          reskeep[ii,25:27]=c(egeeM3mzdzest2,egeeM3mzdzse2,egeeM3mzdzpw2) # est st and power
+          egeeM3mzdzest2=tmp[3,1]; egeeM3mzdzse2=tmp[3,2]; egeeM3mzdztest2=tmp[3,3]**1; egeeM3mzdzp2=tmp[3,4]; egeeM3mzdzpw2=gnome_power(alpha,1,egeeM3mzdztest2)
+          reskeep[counter_within,25:27]=c(egeeM3mzdzest2,egeeM3mzdzse2,egeeM3mzdzpw2) # est st and power
           #
           #}} }} }}
           
-          # For reskeep
-          ipow=c(seq(3,27,3))
-          iest=c(seq(1,25,3))
-          
-          # For mxkeep
-          jpow=c(seq(2,12,2))
-          jest=c(seq(1,11,2))
           
           colnames(reskeep) = c('dz1mfpgs_e','dz1mfpgs_s','dz1mfpgs1_p',
                                 'dz2mfpgs_e','dz2mfpgs_s','dz2mfpgs_p',
@@ -690,6 +686,17 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           # fit the model 
           Model_3out <- mxRun(Model_3)
           summary(Model_3out)
+          
+          Model_3g=omxSetParameters(Model_3out, labels='bpgsg', value=0, free=F)
+          Model_3g_out = mxRun(Model_3g)
+          #
+          Model_3b=omxSetParameters(Model_3out, labels='bpgsb', value=0, free=F)
+          Model_3b_out = mxRun(Model_3b)
+          # "bpgsb","bpgsg"
+          Model_3bg = omxSetParameters(Model_3out, labels=c('bpgsb','bpgsg'), free=F, values=c(0))
+          Model_3bg_out <- mxRun(Model_3bg)
+          
+          
           #
           #
           #
@@ -755,33 +762,45 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           Model_4 <-  mxModel(DZModel)                                               
           # fit the model 
           Model_4out <- mxRun(Model_4)
-          summary(Model_4out)
+          
+          Model_4g=omxSetParameters(Model_4out, labels='bpgsg', value=0, free=F)
+          Model_4g_out = mxRun(Model_4g)
+          #
+          Model_4b=omxSetParameters(Model_4out, labels='bpgsb', value=0, free=F)
+          Model_4b_out = mxRun(Model_4b)
+          # "bpgsb","bpgsg"
+          Model_4bg = omxSetParameters(Model_4out, labels=c('bpgsb','bpgsg'), free=F, values=c(0))
+          Model_4bg_out <- mxRun(Model_4bg)
         }
-        tmp_estimates <- cbind(setkeep[,1:10], round(mxkeep[,jest],3)) %>%
+        # For reskeep
+        ipow=c(seq(3,27,3))
+        iest=c(seq(1,25,3))
+        
+        tmp_estimates <- cbind(setkeep[,1:10], round(reskeep[,iest],3)) %>%
           as.data.frame()
         # colnames(tmp_estimates)[7:15] <- paste0("t", 1:9)
         
-        tmp_power <- cbind(setkeep[,1:10], round(mxkeep[,jpow],3)) %>%
+        tmp_power <- cbind(setkeep[,1:10], round(reskeep[,ipow],3)) %>%
           as.data.frame()
         # colnames(tmp_power)[7:15] <- paste0("t", 1:9)
         
-        final_estimates[counter-nset+1:counter,] <- tmp_estimates
-        final_power[counter-nset+1:counter,] <- tmp_power
-        ii = 0 # reset set counter for each PGS setting
+        final_estimates[counter_overall-n_set+1:counter_overall,] <- tmp_estimates
+        final_power[counter_overall-n_set+1:counter_overall,] <- tmp_power
+        counter_within = 0 # reset set counter for each PGS setting
       }
       #################
 }
 
 # Run simulation without arguments to check defaults work
-dolan_simulation_function()
+#dolan_simulation_function()
 
 # Run simulation for paper
-dolan_simulation_function(a = sqrt(.5), c = sqrt(.2),
-                          e = sqrt(.3), ct = sqrt(c(0, .01, .0025)))
+dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
+                          e = sqrt(.3), ct = sqrt(c(0, .0025, .01)))
 
 # Run simulation for appendix
-dolan_simulation_function(a = sqrt(c(.5, .6)), c = sqrt(c(.2, .1)),
-                          e = sqrt(c(.3, .3)), ct = sqrt(c(0, .01, .0025)))
+# dolan_simulation_function(a = sqrt(c(.5, .6)), c = sqrt(c(.2, .1)),
+                         # e = sqrt(c(.3, .3)), ct = sqrt(c(0, .01, .0025)))
 
 
 # Additional functions for processing the output of the simulation
@@ -834,3 +853,51 @@ estimate_data_effect <- estimate_data %>%
 # Make sure I can get out mx and gee regression results at the same time
 
 # Look at the exact conceptualization behind
+
+
+# Estimates
+e1 = summary(Model_1b_out)$parameters[8, "Estimate"] # g1 - CT Model 1 CT only
+e2 = summary(Model_1g_out)$parameters[8,'Estimate'] # b1 - SI Model 1 SI only
+e3 = summary(Model_1out)$parameters[9,'Estimate'] # g1 - CT Model 1 both
+e4 = summary(Model_1out)$parameters[8,'Estimate'] # b1 - SI Model 1 both
+e5 = summary(Model_2b_out)$parameters[5, 'Estimate'] # bpgsg - CT Model 2 CT only
+e6 = summary(Model_2g_out)$parameters[5, 'Estimate'] # bpgsb - SI Model 2 SI only
+e7 = summary(Model_2out)$parameters[6, 'Estimate'] # bpgsg - CT Model 2 both
+e8 = summary(Model_2out)$parameters[5, 'Estimate'] # bpgsb - SI Model 2 both
+e9 = summary(Model_3out)$parameters[6, 'Estimate'] # bpgsg - CT Model 3
+e10 = summary(Model_3out)$parameters[5, 'Estimate'] # bpgsb - SI Model 3
+e11 = 
+  
+  # Power
+  powchi = function(alpha, df, ncp) {
+    crit = qchisq(alpha, df, lower = F)
+    if (abs(ncp) < .0001) { ncp = 0 }
+    power_ = pchisq(crit, df, ncp, lower = F)
+    power_
+  }
+
+# Model 1
+ncp1 = mxCompare(Model_1out, Model_1b_out)[2,7]
+pow1 = powchi(alpha, 1, ncp1) # g for g only
+
+ncp2 = mxCompare(Model_1out, Model_1g_out)[2,7]
+pow2 = powchi(alpha, 1, ncp2) # b for b only
+
+ncp3 = mxCompare(Model_1b_out, Model_1bg_out)[2,7]
+pow3 = powchi(alpha, 1, ncp3) # g both
+
+ncp4 = mxCompare(Model_1g_out, Model_1bg_out)[2,7]
+pow4 = powchi(alpha, 1, ncp4) # b both
+
+# Model 2
+ncp5 = mxCompare(Model_2out, Model_2b_out)[2,7]
+pow5 = powchi(alpha, 1, ncp5) # g for g only
+
+ncp6 = mxCompare(Model_2out, Model_2g_out)[2,7]
+pow6 = powchi(alpha, 1, ncp6) # b for b only
+
+ncp7 = mxCompare(Model_2b_out, Model_2bg_out)[2,7]
+pow7 = powchi(alpha, 1, ncp7) # g both
+
+ncp8 = mxCompare(Model_2g_out, Model_2bg_out)[2,7]
+pow8 = powchi(alpha, 1, ncp8) # b both
