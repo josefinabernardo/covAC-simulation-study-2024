@@ -56,13 +56,15 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
       n_rows = n_set * length(p_pgs)
 
       # Pre-allocate data frames with the appropriate dimensions
-      final_estimates <- data.frame(matrix(NA, nrow = n_rows, ncol = 19))
-      final_power <- data.frame(matrix(NA, nrow = n_rows, ncol = 19))
+      final_gee_estimates <- data.frame(matrix(NA, nrow = n_rows, ncol = 27))
+      final_gee_power <- data.frame(matrix(NA, nrow = n_rows, ncol = 27))
+      final_mx_estimates <- data.frame(matrix(NA, nrow = n_rows, ncol = 32))
+      final_mx_power <- data.frame(matrix(NA, nrow = n_rows, ncol = 32))
 
       # Create
       setkeep = matrix(NA, n_set, 30)   # to keep settings
-      reskeep = matrix(NA, n_set, 30)   # to keep results each data set
-      mxkeep = matrix(NA, n_set, 30) # openmx results
+      reskeep = matrix(NA, n_set, 30)   # gee results
+      mxkeep = matrix(NA, n_set, 40) # openmx results
 
       colnames(setkeep) = c(c('nmz','ndz','a','c','e','g','b','x','prs','A'), rep(NA, 20))
 
@@ -774,80 +776,81 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           Model_4bg_out <- mxRun(Model_4bg)
 
           # Estimates
-          e1 = summary(Model_1b_out)$parameters[8, "Estimate"] # g1 - CT Model 1 CT only
-          e2 = summary(Model_1g_out)$parameters[8,'Estimate'] # b1 - SI Model 1 SI only
-          e3 = summary(Model_1out)$parameters[9,'Estimate'] # g1 - CT Model 1 both
-          e4 = summary(Model_1out)$parameters[8,'Estimate'] # b1 - SI Model 1 both
+          mxkeep[counter_within, 17:32] <- c(
+          summary(Model_1b_out)$parameters[8, "Estimate"], # g1 - CT Model 1 CT only
+          summary(Model_1g_out)$parameters[8,'Estimate'], # b1 - SI Model 1 SI only
+          summary(Model_1out)$parameters[9,'Estimate'], # g1 - CT Model 1 both
+          summary(Model_1out)$parameters[8,'Estimate'], # b1 - SI Model 1 both
 
-          e5 = summary(Model_2b_out)$parameters[5, 'Estimate'] # bpgsg - CT Model 2 CT only
-          e6 = summary(Model_2g_out)$parameters[5, 'Estimate'] # bpgsb - SI Model 2 SI only
-          e7 = summary(Model_2out)$parameters[6, 'Estimate'] # bpgsg - CT Model 2 both
-          e8 = summary(Model_2out)$parameters[5, 'Estimate'] # bpgsb - SI Model 2 both
+          summary(Model_2b_out)$parameters[5, 'Estimate'], # bpgsg - CT Model 2 CT only
+          summary(Model_2g_out)$parameters[5, 'Estimate'], # bpgsb - SI Model 2 SI only
+          summary(Model_2out)$parameters[6, 'Estimate'], # bpgsg - CT Model 2 both
+          summary(Model_2out)$parameters[5, 'Estimate'], # bpgsb - SI Model 2 both
 
-          e11 = summary(Model_3b_out)$parameters[5, 'Estimate'] # bpgsg - CT Model 3 CT only
-          e12 = summary(Model_3g_out)$parameters[5, 'Estimate'] # bpgsb - SI Model 3 SI only
-          e13 = summary(Model_3out)$parameters[6, 'Estimate'] # bpgsg - CT Model 3
-          e14 = summary(Model_3out)$parameters[5, 'Estimate'] # bpgsb - SI Model 3
+          summary(Model_3b_out)$parameters[5, 'Estimate'], # bpgsg - CT Model 3 CT only
+          summary(Model_3g_out)$parameters[5, 'Estimate'], # bpgsb - SI Model 3 SI only
+          summary(Model_3out)$parameters[6, 'Estimate'], # bpgsg - CT Model 3
+          summary(Model_3out)$parameters[5, 'Estimate'], # bpgsb - SI Model 3
 
-          e15 = summary(Model_4b_out)$parameters[4, 'Estimate'] # bpgsg - CT Model 4 CT only
-          e16 = summary(Model_4g_out)$parameters[4, 'Estimate'] # bpgsb - SI Model 4 SI only
-          e17 = summary(Model_4out)$parameters[5, 'Estimate'] # bpgsg - CT Model 4
-          e18 = summary(Model_4out)$parameters[4, 'Estimate'] # bpgsb - SI Model 4
+          summary(Model_4b_out)$parameters[4, 'Estimate'], # bpgsg - CT Model 4 CT only
+          summary(Model_4g_out)$parameters[4, 'Estimate'], # bpgsb - SI Model 4 SI only
+          summary(Model_4out)$parameters[5, 'Estimate'], # bpgsg - CT Model 4
+          summary(Model_4out)$parameters[4, 'Estimate'], # bpgsb - SI Model 4
+          )
 
+          ncp_tmp <- c(
+            mxCompare(Model_1out, Model_1b_out)[2,7], # g for g only
+            mxCompare(Model_1out, Model_1g_out)[2,7], # b for b only
+            mxCompare(Model_1b_out, Model_1bg_out)[2,7],
+            mxCompare(Model_1g_out, Model_1bg_out)[2,7],
 
-          # Model 1
-          ncp1 = mxCompare(Model_1out, Model_1b_out)[2,7]
-          pow1 = gnome_power(alpha, 1, ncp1) # g for g only
+            mxCompare(Model_2out, Model_2b_out)[2,7], # g for g only
+            mxCompare(Model_2out, Model_2g_out)[2,7], # b for b only
+            mxCompare(Model_2b_out, Model_2bg_out)[2,7], # g both
+            mxCompare(Model_2g_out, Model_2bg_out)[2,7], # b both
 
-          ncp2 = mxCompare(Model_1out, Model_1g_out)[2,7]
-          pow2 = gnome_power(alpha, 1, ncp2) # b for b only
+            mxCompare(Model_3out, Model_3b_out)[2,7], # g for g only
+            mxCompare(Model_3out, Model_3g_out)[2,7], # b for b only
+            mxCompare(Model_3b_out, Model_3bg_out)[2,7], # g both
+            mxCompare(Model_3g_out, Model_3bg_out)[2,7], # b both
 
-          ncp3 = mxCompare(Model_1b_out, Model_1bg_out)[2,7]
-          pow3 = gnome_power(alpha, 1, ncp3) # g both
+            mxCompare(Model_4out, Model_4b_out)[2,7], # g for g only
+            mxCompare(Model_4out, Model_4g_out)[2,7], # b for b only
+            mxCompare(Model_4b_out, Model_4bg_out)[2,7], # g both
+            mxCompare(Model_4g_out, Model_4bg_out)[2,7] # b both
+          )
 
-          ncp4 = mxCompare(Model_1g_out, Model_1bg_out)[2,7]
-          pow4 = gnome_power(alpha, 1, ncp4) # b both
+          mxkeep[counter_within, 1:16] <- sapply(ncp_tmp, function(ncp) {
+            gnome_power(alpha, 1, ncp)
+          })
 
-          # Model 2
-          ncp5 = mxCompare(Model_2out, Model_2b_out)[2,7]
-          pow5 = gnome_power(alpha, 1, ncp5) # g for g only
-
-          ncp6 = mxCompare(Model_2out, Model_2g_out)[2,7]
-          pow6 = gnome_power(alpha, 1, ncp6) # b for b only
-
-          ncp7 = mxCompare(Model_2b_out, Model_2bg_out)[2,7]
-          pow7 = gnome_power(alpha, 1, ncp7) # g both
-
-          ncp8 = mxCompare(Model_2g_out, Model_2bg_out)[2,7]
-          pow8 = gnome_power(alpha, 1, ncp8) # b both
-
-          # Model 3
-          ncp9 = mxCompare(Model_3out, Model_3b_out)[2,7]
-          pow9 = gnome_power(alpha, 1, ncp9) # g for g only
-
-          ncp10 = mxCompare(Model_3out, Model_3g_out)[2,7]
-          pow10 = gnome_power(alpha, 1, ncp10) # b for b only
-
-          ncp11 = mxCompare(Model_3b_out, Model_3bg_out)[2,7]
-          pow11 = gnome_power(alpha, 1, ncp11) # g both
-
-          ncp12 = mxCompare(Model_3g_out, Model_3bg_out)[2,7]
-          pow12 = gnome_power(alpha, 1, ncp12) # b both
         }
         # For reskeep
-        ipow=c(seq(3,27,3))
-        iest=c(seq(1,25,3))
+        ipow = c(seq(3,27,3))
+        iest = c(seq(1,25,3))
+
+        # For mxkeep
+        jpow = 1:16
+        jest = 17:32
 
         gee_estimates <- cbind(setkeep[,1:10], round(reskeep[,iest],3)) %>%
           as.data.frame()
-        # colnames(tmp_estimates)[7:15] <- paste0("t", 1:9)
 
         gee_power <- cbind(setkeep[,1:10], round(reskeep[,ipow],3)) %>%
           as.data.frame()
-        # colnames(tmp_power)[7:15] <- paste0("t", 1:9)
+
+        mx_estimates <- cbind(setkeep[,1:10], round(mxkeep[,jest],3)) %>%
+          as.data.frame()
+
+        mx_power <- cbind(setkeep[,1:10], round(mxkeep[,jpow],3)) %>%
+          as.data.frame()
 
         final_gee_estimates[counter_overall-n_set+1:counter_overall,] <- gee_estimates
         final_gee_power[counter_overall-n_set+1:counter_overall,] <- gee_power
+
+        final_mx_estimates[counter_overall-n_set+1:counter_overall,] <- mx_estimates
+        final_mx_power[counter_overall-n_set+1:counter_overall,] <- mx_power
+
         counter_within = 0 # reset set counter for each PGS setting
       }
       return(list(final_mx_estimates, final_mx_power, final_gee_estimates, final_gee_power))
@@ -857,7 +860,7 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
 #dolan_simulation_function()
 
 # Run simulation for paper
-dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
+data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
                           e = sqrt(.3), ct = sqrt(c(0, .0025, .01)))
 
 # Run simulation for appendix
