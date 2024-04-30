@@ -6,7 +6,7 @@ library(MASS)
 library(OpenMx)
 library(geepack)
 library(tidyverse)
-devtools::load_all('~/gnomesims')
+devtools::load_all('~/GitHub/gnomesims')
 library(gnomesims)
 
 # Define defaults outside of function
@@ -62,11 +62,11 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
       final_mx_power <- data.frame(matrix(NA, nrow = n_rows, ncol = 32))
 
       # Create
-      setkeep = matrix(NA, n_set, 30)   # to keep settings
-      reskeep = matrix(NA, n_set, 30)   # gee results
-      mxkeep = matrix(NA, n_set, 40) # openmx results
+      setkeep = matrix(NA, n_set, 10)   # to keep settings
+      reskeep = matrix(NA, n_set, 27)   # gee results
+      mxkeep = matrix(NA, n_set, 32) # openmx results
 
-      colnames(setkeep) = c(c('nmz','ndz','a','c','e','g','b','x','prs','A'), rep(NA, 20))
+      colnames(setkeep) = c('nmz','ndz','a','c','e','g','b','x','prs','A')
 
       # Print number of settings to the user
       print(paste('The factorial design has', n_set, 'setting(s).'))
@@ -379,7 +379,7 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
                                 'mzdzmfpgs_e','mzdzmfpgs_s','mzdzmfpgs_p',
                                 'mzdzmpgsm_e','mzdzmpgsm_s','mzdzmpgsm_p',
                                 'mzdzmfpgs_m_e','mzdzmfpgs_m_s','mzdzmfpgs_m_p',
-                                'mzdzmpgst_mf_e','mzdzmpgst_mf_s','mzdzmpgst_mf_p',NA,NA,NA)
+                                'mzdzmpgst_mf_e','mzdzmpgst_mf_s','mzdzmpgst_mf_p')
 
           # switch to OpenMx covariance structure modeling
           #
@@ -613,6 +613,19 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           Model_2out <- mxRun(Model_2)
           summary(Model_2out)
           #
+          sat_2out = mxRefModels(Model_2out, run=T)
+          mxCompare(sat_2out, Model_2out)
+          #
+          #
+          Model_2g=omxSetParameters(Model_2out, labels='bpgsg', value=0, free=F)
+          Model_2g_out = mxRun(Model_2g)
+          #
+          Model_2b=omxSetParameters(Model_2out, labels='bpgsb', value=0, free=F)
+          Model_2b_out = mxRun(Model_2b)
+          # "bpgsb","bpgsg"
+          Model_2bg = omxSetParameters(Model_2out, labels=c('bpgsb','bpgsg'), free=F, values=c(0))
+          Model_2bg_out <- mxRun(Model_2bg)
+          #
           #
           # sat
           #
@@ -703,19 +716,6 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           #
           #
           #
-          sat_2out = mxRefModels(Model_2out, run=T)
-          mxCompare(sat_2out, Model_2out)
-          #
-          #
-          Model_2g=omxSetParameters(Model_2out, labels='bpgsg', value=0, free=F)
-          Model_2g_out = mxRun(Model_2g)
-          #
-          Model_2b=omxSetParameters(Model_2out, labels='bpgsb', value=0, free=F)
-          Model_2b_out = mxRun(Model_2b)
-          # "bpgsb","bpgsg"
-          Model_2bg = omxSetParameters(Model_2out, labels=c('bpgsb','bpgsg'), free=F, values=c(0))
-          Model_2bg_out <- mxRun(Model_2bg)
-          #
           #
           # ---------------------------------------------------------- def vars DZ only
           # sat
@@ -795,7 +795,7 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           summary(Model_4b_out)$parameters[4, 'Estimate'], # bpgsg - CT Model 4 CT only
           summary(Model_4g_out)$parameters[4, 'Estimate'], # bpgsb - SI Model 4 SI only
           summary(Model_4out)$parameters[5, 'Estimate'], # bpgsg - CT Model 4
-          summary(Model_4out)$parameters[4, 'Estimate'], # bpgsb - SI Model 4
+          summary(Model_4out)$parameters[4, 'Estimate'] # bpgsb - SI Model 4
           )
 
           ncp_tmp <- c(
@@ -862,6 +862,12 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
 # Run simulation for paper
 data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
                           e = sqrt(.3), ct = sqrt(c(0, .0025, .01)))
+
+# Extract data sets
+gee_estimates <- drop_na(data_list[[1]])[,1:19]
+gee_power <- drop_na(data_list[[2]])[,1:19]
+mx_estimates <- drop_na(data_list[[3]])[,1:26]
+mx_power <- drop_na(data_list[[4]])[,1:26]
 
 # Run simulation for appendix
 # dolan_simulation_function(a = sqrt(c(.5, .6)), c = sqrt(c(.2, .1)),
