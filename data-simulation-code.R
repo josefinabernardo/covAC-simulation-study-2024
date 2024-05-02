@@ -6,7 +6,7 @@ library(MASS)
 library(OpenMx)
 library(geepack)
 library(tidyverse)
-devtools::load_all('~/GitHub/gnomesims')
+devtools::load_all('~/gnomesims')
 library(gnomesims)
 
 # Define defaults outside of function
@@ -56,10 +56,10 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
       n_rows = n_set * length(p_pgs)
 
       # Pre-allocate data frames with the appropriate dimensions
-      final_gee_estimates <- data.frame(matrix(NA, nrow = n_rows, ncol = 27))
-      final_gee_power <- data.frame(matrix(NA, nrow = n_rows, ncol = 27))
-      final_mx_estimates <- data.frame(matrix(NA, nrow = n_rows, ncol = 32))
-      final_mx_power <- data.frame(matrix(NA, nrow = n_rows, ncol = 32))
+      final_gee_estimates <- data.frame(matrix(NA, nrow = n_rows, ncol = 19))
+      final_gee_power <- data.frame(matrix(NA, nrow = n_rows, ncol = 19))
+      final_mx_estimates <- data.frame(matrix(NA, nrow = n_rows, ncol = 26))
+      final_mx_power <- data.frame(matrix(NA, nrow = n_rows, ncol = 26))
 
       # Create
       setkeep = matrix(NA, n_set, 10)   # to keep settings
@@ -775,29 +775,7 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           Model_4bg = omxSetParameters(Model_4out, labels=c('bpgsb','bpgsg'), free=F, values=c(0))
           Model_4bg_out <- mxRun(Model_4bg)
 
-          # Estimates
-          mxkeep[counter_within, 17:32] <- c(
-          summary(Model_1b_out)$parameters[8, "Estimate"], # g1 - CT Model 1 CT only
-          summary(Model_1g_out)$parameters[8,'Estimate'], # b1 - SI Model 1 SI only
-          summary(Model_1out)$parameters[9,'Estimate'], # g1 - CT Model 1 both
-          summary(Model_1out)$parameters[8,'Estimate'], # b1 - SI Model 1 both
-
-          summary(Model_2b_out)$parameters[5, 'Estimate'], # bpgsg - CT Model 2 CT only
-          summary(Model_2g_out)$parameters[5, 'Estimate'], # bpgsb - SI Model 2 SI only
-          summary(Model_2out)$parameters[6, 'Estimate'], # bpgsg - CT Model 2 both
-          summary(Model_2out)$parameters[5, 'Estimate'], # bpgsb - SI Model 2 both
-
-          summary(Model_3b_out)$parameters[5, 'Estimate'], # bpgsg - CT Model 3 CT only
-          summary(Model_3g_out)$parameters[5, 'Estimate'], # bpgsb - SI Model 3 SI only
-          summary(Model_3out)$parameters[6, 'Estimate'], # bpgsg - CT Model 3
-          summary(Model_3out)$parameters[5, 'Estimate'], # bpgsb - SI Model 3
-
-          summary(Model_4b_out)$parameters[4, 'Estimate'], # bpgsg - CT Model 4 CT only
-          summary(Model_4g_out)$parameters[4, 'Estimate'], # bpgsb - SI Model 4 SI only
-          summary(Model_4out)$parameters[5, 'Estimate'], # bpgsg - CT Model 4
-          summary(Model_4out)$parameters[4, 'Estimate'] # bpgsb - SI Model 4
-          )
-
+          # Power
           ncp_tmp <- c(
             mxCompare(Model_1out, Model_1b_out)[2,7], # g for g only
             mxCompare(Model_1out, Model_1g_out)[2,7], # b for b only
@@ -820,9 +798,34 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
             mxCompare(Model_4g_out, Model_4bg_out)[2,7] # b both
           )
 
-          mxkeep[counter_within, 1:16] <- sapply(ncp_tmp, function(ncp) {
+          ncp_power_tmp <- sapply(ncp_tmp, function(ncp) {
             gnome_power(alpha, 1, ncp)
           })
+
+          # Estimates
+          estimates_tmp <- c(
+          summary(Model_1b_out)$parameters[8, "Estimate"], # g1 - CT Model 1 CT only
+          summary(Model_1g_out)$parameters[8,'Estimate'], # b1 - SI Model 1 SI only
+          summary(Model_1out)$parameters[9,'Estimate'], # g1 - CT Model 1 both
+          summary(Model_1out)$parameters[8,'Estimate'], # b1 - SI Model 1 both
+
+          summary(Model_2b_out)$parameters[5, 'Estimate'], # bpgsg - CT Model 2 CT only
+          summary(Model_2g_out)$parameters[5, 'Estimate'], # bpgsb - SI Model 2 SI only
+          summary(Model_2out)$parameters[6, 'Estimate'], # bpgsg - CT Model 2 both
+          summary(Model_2out)$parameters[5, 'Estimate'], # bpgsb - SI Model 2 both
+
+          summary(Model_3b_out)$parameters[5, 'Estimate'], # bpgsg - CT Model 3 CT only
+          summary(Model_3g_out)$parameters[5, 'Estimate'], # bpgsb - SI Model 3 SI only
+          summary(Model_3out)$parameters[6, 'Estimate'], # bpgsg - CT Model 3
+          summary(Model_3out)$parameters[5, 'Estimate'], # bpgsb - SI Model 3
+
+          summary(Model_4b_out)$parameters[4, 'Estimate'], # bpgsg - CT Model 4 CT only
+          summary(Model_4g_out)$parameters[4, 'Estimate'], # bpgsb - SI Model 4 SI only
+          summary(Model_4out)$parameters[5, 'Estimate'], # bpgsg - CT Model 4
+          summary(Model_4out)$parameters[4, 'Estimate'] # bpgsb - SI Model 4
+          )
+
+          mxkeep[counter_within, ] <- c(ncp_power_tmp, estimates_tmp)
 
         }
         # For reskeep
@@ -864,10 +867,17 @@ data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
                           e = sqrt(.3), ct = sqrt(c(0, .0025, .01)))
 
 # Extract data sets
-gee_estimates <- drop_na(data_list[[1]])[,1:19]
-gee_power <- drop_na(data_list[[2]])[,1:19]
-mx_estimates <- drop_na(data_list[[3]])[,1:26]
-mx_power <- drop_na(data_list[[4]])[,1:26]
+mx_estimates <- drop_na(data_list[[1]])
+mx_power <- drop_na(data_list[[2]])
+gee_estimates <- drop_na(data_list[[3]])
+gee_power <- drop_na(data_list[[4]])
+
+# Write to .csv files
+# Write data frames to CSV files
+write.csv(mx_estimates, file = "2024-05-01_mx_estimates_results.csv", row.names = FALSE)
+write.csv(mx_power, file = "2024-05-01_mx_power_results.csv", row.names = FALSE)
+write.csv(gee_estimates, file = "2024-05-01_gee_estimates_results.csv", row.names = FALSE)
+write.csv(gee_power, file = "2024-05-01_gee_power_results.csv", row.names = FALSE)
 
 # Run simulation for appendix
 # dolan_simulation_function(a = sqrt(c(.5, .6)), c = sqrt(c(.2, .1)),
