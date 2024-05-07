@@ -6,13 +6,13 @@ library(MASS)
 library(OpenMx)
 library(geepack)
 library(tidyverse)
-devtools::load_all('~/gnomesims')
 library(gnomesims)
 
 # Define defaults outside of function
 default_a <- sqrt(c(.4))
 default_c <- sqrt(c(.3))
 default_e <- sqrt(c(.3))
+default_x <- 0
 default_ct <- sqrt(c(0, .0025, .01))
 default_si <- sqrt(c(0, .0025, .01))
 
@@ -27,15 +27,16 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
              a = default_a, # Additive genetic path coefficient
              c = default_c, # Shared environmental path coefficient
              e = default_e, # Unique environmental path coefficient
+             x = default_x, # Who's to say
              ct = default_ct, # Cultural Transmission - Parent genotype to child phenotype
              si = default_si, # Sibling Interaction - Sibling 1 genotype to sibling 2 phenotype
              nloci = 100, # Number of diallelic loci
              npgsloci = c(2, 5, 10, 15), # Number of loci comprising the PGS
-             stzPRS = FALSE # Standardize the prs
+             stzPGS = FALSE # Standardize the prs
     ){
 
       #Create all possible parameter combinations
-      param_combinations <- expand_grid(a = a, c = c, e = e, ct = ct, si = si)
+      param_combinations <- expand_grid(a = a, c = c, e = e, x = x, ct = ct, si = si)
 
       # Only retain distinct combinations where A + C + E = 1
       filtered_combinations <- param_combinations %>%
@@ -66,16 +67,12 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
       reskeep = matrix(NA, n_set, 27)   # gee results
       mxkeep = matrix(NA, n_set, 32) # openmx results
 
-      colnames(setkeep) = c('nmz','ndz','a','c','e','g','b','x','prs','A')
+      colnames(setkeep) = c('nmz','ndz','a','c','e','g','b','x','pgs','A')
 
       # Print number of settings to the user
       print(paste('The factorial design has', n_set, 'setting(s).'))
 
       #################
-
-      nloci = 100 # Number of diallelic loci
-      #npgsloci = c(2, 5, 10, 15) # Number of loci comprising the PGS
-      npgsloci = 10
 
       for (ngp_i in seq_along(npgsloci)) {
         ngp = nloci[ngp_i] # number of loci comprising polygenic score pgs (0 <= npg <= ng).
@@ -94,8 +91,8 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           par_e <- filtered_combinations$e[i]
           par_g <- filtered_combinations$ct[i]
           par_b <- filtered_combinations$si[i]
-          #par_x <- filtered_combinations$x[i]
-          par_x <- 0
+          par_x <- filtered_combinations$x[i]
+
           counter_within = counter_within + 1 # count sets in factorial design
           counter_overall = counter_overall + 1 # count sets overall
           #
@@ -147,7 +144,7 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           Pht1=Pht1 + par_x*Pht2
           Pht2=Pht2 + par_x*Pht1
           # standardize prs
-          if (stzPRS) {
+          if (stzPGS) {
             Pm=scale(Pm)
             Pf=scale(Pf)
             Pt1=scale(Pt1)
@@ -188,7 +185,7 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           #
           ## standardize prs
           #
-          if (stzPRS) {
+          if (stzPGS) {
             Pm=scale(Pm)
             Pf=scale(Pf)
             Pt1=scale(Pt1)
@@ -859,12 +856,15 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
       return(list(final_mx_estimates, final_mx_power, final_gee_estimates, final_gee_power))
 }
 
-# Run simulation without arguments to check defaults work
-#dolan_simulation_function()
-
 # Run simulation for paper
-data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
-                          e = sqrt(.3), ct = sqrt(c(0, .0025, .01)))
+# data_list <- dolan_simulation_function()
+
+# Run simulation for appendix
+#data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
+#                          e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15))
+
+data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
+                                       #                          e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15))
 
 # Extract data sets
 mx_estimates <- drop_na(data_list[[1]])
@@ -873,7 +873,7 @@ gee_estimates <- drop_na(data_list[[3]])
 gee_power <- drop_na(data_list[[4]])
 
 # Re-name columns
-setnames = c('nmz','ndz','a','c','e','g','b','x','prs','A')
+setnames = c('nmz','ndz','a','c','e','g','b','x','PGS','A')
 colnames(mx_estimates) <- c(setnames, paste0("e", 1:16))
 colnames(mx_power) <- c(setnames, paste0("p", 1:16))
 colnames(gee_estimates) <- c(setnames, paste0("e", 1:9))
@@ -881,46 +881,17 @@ colnames(gee_power) <- c(setnames, paste0("p", 1:9))
 
 # Write to .csv files
 # Write data frames to CSV files
-write.csv(mx_estimates, file = "2024-05-01_mx_estimates_results.csv", row.names = TRUE)
-write.csv(mx_power, file = "2024-05-01_mx_power_results.csv", row.names = TRUE)
-write.csv(gee_estimates, file = "2024-05-01_gee_estimates_results.csv", row.names = TRUE)
-write.csv(gee_power, file = "2024-05-01_gee_power_results.csv", row.names = TRUE)
+write.csv(mx_estimates, file = "2024-05-07_mx_estimates_appendix.csv", row.names = TRUE)
+write.csv(mx_power, file = "2024-05-07_mx_power_appendix.csv", row.names = TRUE)
+write.csv(gee_estimates, file = "2024-05-07_gee_estimates_appendix.csv", row.names = TRUE)
+write.csv(gee_power, file = "2024-05-07_gee_power_appendix.csv", row.names = TRUE)
 
 # Read in these files
-mx_estimates <- read.csv("2024-05-01_mx_estimates_results.csv")
-mx_power <- read.csv("2024-05-01_mx_power_results.csv")
-gee_estimates <- read.csv("2024-05-01_gee_estimates_results.csv")
-gee_power <- read.csv("2024-05-01_gee_power_results.csv")
+mx_estimates <- read.csv("2024-05-07_mx_estimates_appendix.csv")
+mx_power <- read.csv("2024-05-07_mx_power_appendix.csv")
+gee_estimates <- read.csv("2024-05-07_gee_estimates_appendix.csv")
+gee_power <- read.csv("2024-05-07_gee_power_appendix.csv")
 
-# Run simulation for appendix
-# dolan_simulation_function(a = sqrt(c(.5, .6)), c = sqrt(c(.2, .1)),
-                         # e = sqrt(c(.3, .3)), ct = sqrt(c(0, .01, .0025)))
-
-
-# Additional functions for processing the output of the simulation
-
-# Function to calculate power from non-centrality parameter
-ncp_power_function <- function(ncp, df, alpha = .0001){
-  critical_chi2 = qchisq(alpha, df, lower = FALSE)
-  if(abs(ncp) < .0001){
-    ncp = 0
-  }
-  power = pchisq(critical_chi2, df, ncp, lower = FALSE)
-  return(power)
-}
-
-expSigma <- function(a,c,e,b,g) {
-  vA = 1
-  vC = 1
-  vE = 1
-
-  # Phenotypic covariances for MZ and DZ
-  Smz = 2 * (g + a/2 + b/2)**2 * vA + (a * vA/2 + b * vA/2) * a + (a * vA/2+b * vA/2) * b + c**2 * vC + e**2 * vE
-  Sdz = 2 * (g + a/2 + b/2)**2 * vA + a**2 * vA/2 + b**2 * vA/2 + c**2 * vC + e**2 * vE
-
-  expS = list(Smz = Smz, Sdz = Sdz)
-  return(expS)
-}
 
 # Use effect size function on the data sets
 
