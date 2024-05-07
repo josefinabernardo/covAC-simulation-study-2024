@@ -872,12 +872,25 @@ mx_power <- drop_na(data_list[[2]])
 gee_estimates <- drop_na(data_list[[3]])
 gee_power <- drop_na(data_list[[4]])
 
+# Re-name columns
+setnames = c('nmz','ndz','a','c','e','g','b','x','prs','A')
+colnames(mx_estimates) <- c(setnames, paste0("e", 1:16))
+colnames(mx_power) <- c(setnames, paste0("p", 1:16))
+colnames(gee_estimates) <- c(setnames, paste0("e", 1:9))
+colnames(gee_power) <- c(setnames, paste0("p", 1:9))
+
 # Write to .csv files
 # Write data frames to CSV files
-write.csv(mx_estimates, file = "2024-05-01_mx_estimates_results.csv", row.names = FALSE)
-write.csv(mx_power, file = "2024-05-01_mx_power_results.csv", row.names = FALSE)
-write.csv(gee_estimates, file = "2024-05-01_gee_estimates_results.csv", row.names = FALSE)
-write.csv(gee_power, file = "2024-05-01_gee_power_results.csv", row.names = FALSE)
+write.csv(mx_estimates, file = "2024-05-01_mx_estimates_results.csv", row.names = TRUE)
+write.csv(mx_power, file = "2024-05-01_mx_power_results.csv", row.names = TRUE)
+write.csv(gee_estimates, file = "2024-05-01_gee_estimates_results.csv", row.names = TRUE)
+write.csv(gee_power, file = "2024-05-01_gee_power_results.csv", row.names = TRUE)
+
+# Read in these files
+mx_estimates <- read.csv("2024-05-01_mx_estimates_results.csv")
+mx_power <- read.csv("2024-05-01_mx_power_results.csv")
+gee_estimates <- read.csv("2024-05-01_gee_estimates_results.csv")
+gee_power <- read.csv("2024-05-01_gee_power_results.csv")
 
 # Run simulation for appendix
 # dolan_simulation_function(a = sqrt(c(.5, .6)), c = sqrt(c(.2, .1)),
