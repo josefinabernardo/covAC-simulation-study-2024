@@ -40,21 +40,21 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
 
       # Only retain distinct combinations where A + C + E = 1
       filtered_combinations <- param_combinations %>%
-        filter(round(a^2 + c^2 + e^2) == 1) %>%
+        filter(round(a^2 + c^2 + e^2, 2) == 1) %>%
         distinct()
 
       # Number of settings we iterate through
       n_set = nrow(filtered_combinations)
 
       # R2 of the polygenic scores
-      p_pgs = npgsloci/nloci
+      global_ppgs = npgsloci/nloci
 
       # Initiate counters
       counter_within = 0  # counts sets within PGS setting
       counter_overall = 0 # counts sets overall
 
       # Determine numner of rows for data frames
-      n_rows = n_set * length(p_pgs)
+      n_rows = n_set * length(global_ppgs)
 
       # Pre-allocate data frames with the appropriate dimensions
       final_gee_estimates <- data.frame(matrix(NA, nrow = n_rows, ncol = 19))
@@ -75,8 +75,9 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
       #################
 
       for (ngp_i in seq_along(npgsloci)) {
-        ngp = nloci[ngp_i] # number of loci comprising polygenic score pgs (0 <= npg <= ng).
-        p_pgs=p_pgs[ngp_i]  # percentage of genetic variance explained by pgs
+
+        ngp = nloci[ngp_i]
+        p_pgs = global_ppgs[ngp_i]  # percentage of genetic variance explained by pgs
 
         print(paste('Running simulation proportion of genetic variance explained by the PGS is:', p_pgs, "."))
 
@@ -859,12 +860,16 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
 # Run simulation for paper
 # data_list <- dolan_simulation_function()
 
-# Run simulation for appendix
-#data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
+#Run simulation for appendix
+data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
+                         e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15))
+
+# data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
 #                          e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15))
 
-data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
-                                       #                          e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15))
+# check_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
+#                           e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10),
+#                           ct = sqrt(c(0, .0025)), si = sqrt(c(0, .0025)), x = 0)
 
 # Extract data sets
 mx_estimates <- drop_na(data_list[[1]])
@@ -879,12 +884,12 @@ colnames(mx_power) <- c(setnames, paste0("p", 1:16))
 colnames(gee_estimates) <- c(setnames, paste0("e", 1:9))
 colnames(gee_power) <- c(setnames, paste0("p", 1:9))
 
-# Write to .csv files
+
 # Write data frames to CSV files
-write.csv(mx_estimates, file = "2024-05-07_mx_estimates_appendix.csv", row.names = TRUE)
-write.csv(mx_power, file = "2024-05-07_mx_power_appendix.csv", row.names = TRUE)
-write.csv(gee_estimates, file = "2024-05-07_gee_estimates_appendix.csv", row.names = TRUE)
-write.csv(gee_power, file = "2024-05-07_gee_power_appendix.csv", row.names = TRUE)
+write.csv(mxestimates, file = "2024-05-08_mx_estimates_appendix.csv", row.names = TRUE)
+write.csv(mxpower, file = "2024-05-08_mx_power_appendix.csv", row.names = TRUE)
+write.csv(geeestimates, file = "2024-05-08_gee_estimates_appendix.csv", row.names = TRUE)
+write.csv(geepower, file = "2024-05-08_gee_power_appendix.csv", row.names = TRUE)
 
 # Read in these files
 mx_estimates <- read.csv("2024-05-07_mx_estimates_appendix.csv")
