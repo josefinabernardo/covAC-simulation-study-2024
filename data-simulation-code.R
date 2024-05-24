@@ -216,10 +216,10 @@ dolan_simulation_function <- function(nrep = 500, # Number of repetitions
           # add sum of mother and father prs and add mean of twins prs ... we need these additional variables to
           #                                                                detect cov(AC)
           #
-          addmz_e=cbind(phdatmz_e$pgsm+phdatmz_e$pgsf, phdatmz_e$pgst1+phdatmz_e$pgst2)
+          addmz_e=cbind(phdatmz_e$pgsm+phdatmz_e$pgsf, (phdatmz_e$pgst1+phdatmz_e$pgst2)/2)
           colnames(addmz_e) = c('pgsmf','mpgst')
           phdatmz_e = cbind(phdatmz_e, addmz_e)
-          adddz_e=cbind(phdatdz_e$pgsm+phdatdz_e$pgsf, phdatdz_e$pgst1+phdatdz_e$pgst2)
+          adddz_e=cbind(phdatdz_e$pgsm+phdatdz_e$pgsf, (phdatdz_e$pgst1+phdatdz_e$pgst2)/2)
           colnames(adddz_e) = c('pgsmf','mpgst')
           phdatdz_e = cbind(phdatdz_e, adddz_e)
           # add sum and mean
@@ -884,12 +884,17 @@ colnames(mx_power) <- c(setnames, paste0("p", 1:16))
 colnames(gee_estimates) <- c(setnames, paste0("e", 1:9))
 colnames(gee_power) <- c(setnames, paste0("p", 1:9))
 
+# Use effect size function on the data sets
+mx_estimates <-
+mx_power <- drop_na(data_list[[2]])
+gee_estimates <- drop_na(data_list[[3]])
+gee_power <- drop_na(data_list[[4]])
 
 # Write data frames to CSV files
-write.csv(mxestimates, file = "2024-05-08_mx_estimates_appendix.csv", row.names = TRUE)
-write.csv(mxpower, file = "2024-05-08_mx_power_appendix.csv", row.names = TRUE)
-write.csv(geeestimates, file = "2024-05-08_gee_estimates_appendix.csv", row.names = TRUE)
-write.csv(geepower, file = "2024-05-08_gee_power_appendix.csv", row.names = TRUE)
+write.csv(mxestimates, file = "2024-05-24_mx_estimates_appendix.csv", row.names = TRUE)
+write.csv(mxpower, file = "2024-05-24_mx_power_appendix.csv", row.names = TRUE)
+write.csv(geeestimates, file = "2024-05-24_gee_estimates_appendix.csv", row.names = TRUE)
+write.csv(geepower, file = "2024-05-24_gee_power_appendix.csv", row.names = TRUE)
 
 # Read in these files
 mx_estimates <- read.csv("2024-05-07_mx_estimates_appendix.csv")
@@ -897,21 +902,6 @@ mx_power <- read.csv("2024-05-07_mx_power_appendix.csv")
 gee_estimates <- read.csv("2024-05-07_gee_estimates_appendix.csv")
 gee_power <- read.csv("2024-05-07_gee_power_appendix.csv")
 
-
-# Use effect size function on the data sets
-
-# Load relevant data sets
-power_data <- read_csv("2024-02-19_power_largersample.csv")
-estimate_data <- read_csv("2024-02-19_estimates_largersample.csv")
-
-# Calculate effect size measures
-power_data_effect <- power_data %>%
-  mutate(Smz = expSigma(a, c, e, b, g)$Smz - 1,
-         Sdz = expSigma(a, c, e, b, g)$Sdz - 1)
-
-estimate_data_effect <- estimate_data %>%
-  mutate(Smz = expSigma(a, c, e, b, g)$Smz - 1,
-         Sdz = expSigma(a, c, e, b, g)$Sdz - 1)
 
 # ISSUES
 
