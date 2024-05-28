@@ -9,12 +9,12 @@ app_gee_power <- read.csv("2024-05-08_gee_power_appendix.csv")
 # DZ-only data
 p13_mx_data <- app_mx_power %>%
   filter(g == 0, round(a^2, 3) == .4) %>%
-  select("b", "p13", 'PGS') %>%
+  dplyr::select("b", "p13", "PGS") %>%
   mutate(Variable = "CT")
 
 p14_mx_data <- app_mx_power %>%
   filter(b == 0, round(a^2, 3) == .4) %>%
-  select("g", "p14", 'PGS') %>%
+  dplyr::select("g", "p14", 'PGS') %>%
   mutate(Variable = "SI")
 
 colnames(p13_mx_data)[1:2] <- c("Confounder", "Power")
@@ -26,12 +26,12 @@ mx_dz_data <- rbind(p13_mx_data, p14_mx_data) %>%
 # Create same dataset for MX
 p2_gee_data <- app_gee_power %>%
   filter(g == 0, round(a^2, 3) == .4) %>%
-  select("b", "p2", 'PGS') %>%
+  dplyr::select("b", "p2", 'PGS') %>%
   mutate(Variable = "CT")
 
 p3_gee_data <- app_gee_power %>%
   filter(b == 0, round(a^2, 3) == .4) %>%
-  select("g", "p3", 'PGS') %>%
+  dplyr::select("g", "p3", 'PGS') %>%
   mutate(Variable = "SI")
 
 colnames(p2_gee_data)[1:2] <- c("Confounder", "Power")
@@ -64,12 +64,12 @@ ggplot(data = full_dz_data, mapping = aes(x = Confounder, y = Power, color = Var
 # Plot of OpenMx MZ&DZ vs. DZ-only
 p1_mx_data <- app_mx_power %>%
   filter(g == 0, round(a^2, 3) == .4) %>%
-  select("b", "p1", 'PGS') %>%
+  dplyr::select("b", "p1", 'PGS') %>%
   mutate(Variable = "CT")
 
 p2_mx_data <- app_mx_power %>%
   filter(b == 0, round(a^2, 3) == .4) %>%
-  select("g", "p2", 'PGS') %>%
+  dplyr::select("g", "p2", 'PGS') %>%
   mutate(Variable = "SI")
 
 colnames(p1_mx_data)[1:2] <- c("Confounder", "Power")
