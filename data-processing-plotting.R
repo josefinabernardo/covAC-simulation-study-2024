@@ -1,10 +1,24 @@
 library(tidyverse)
 
 # Appendix data
-app_mx_estimates <- read.csv("2024-05-08_mx_estimates_appendix.csv")
-app_mx_power <- read.csv("2024-05-08_mx_power_appendix.csv")
-app_gee_estimates <- read.csv("2024-05-08_gee_estimates_appendix.csv")
-app_gee_power <- read.csv("2024-05-08_gee_power_appendix.csv")
+app_mx_estimates <- read.csv("2024-05-28_mx_estimates_appendix.csv")
+app_mx_power <- read.csv("2024-05-28_mx_power_appendix.csv")
+app_gee_estimates <- read.csv("2024-05-28_gee_estimates_appendix.csv")
+app_gee_power <- read.csv("2024-05-28_gee_power_appendix.csv")
+
+# Extract data from tables for running text
+
+# MZ and DZ
+app_mx_estimates %>%
+  filter(round(a^2, 3) == .4, PGS == 0.1) %>%
+  select(g, b, e1, e2, e3, e4, Smz, Sdz) %>%
+  arrange(as.logical(b) + as.logical(g), b) %>%
+  mutate(Smz = scales::percent(Smz), Sdz = scales::percent(Sdz)) %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = e1,
+    `SI (m2)` = e2, `CT (m3)` = e3, `SI (m3)` = e4) %>%
+  write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
+
+# DZ only
 
 # DZ-only data
 p13_mx_data <- app_mx_power %>%
@@ -23,7 +37,7 @@ colnames(p14_mx_data)[1:2] <- c("Confounder", "Power")
 mx_dz_data <- rbind(p13_mx_data, p14_mx_data) %>%
   mutate(Model = "OpenMx", PGS_percent = scales::percent(PGS))
 
-# Create same dataset for MX
+# Create same dataset for Gee
 p2_gee_data <- app_gee_power %>%
   filter(g == 0, round(a^2, 3) == .4) %>%
   select("b", "p2", 'PGS') %>%

@@ -17,7 +17,7 @@ default_ct <- sqrt(c(0, .0025, .01))
 default_si <- sqrt(c(0, .0025, .01))
 
 # Function to simulate data
-dolan_simulation_function <- function(nrep = 500, # Number of repetitions
+dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
              alpha = .05, # Alpha for power
              cmethod = 'independence', # Gee Covariance Structure
              seed = NA, # Set a seed if desired
@@ -885,22 +885,24 @@ colnames(gee_estimates) <- c(setnames, paste0("e", 1:9))
 colnames(gee_power) <- c(setnames, paste0("p", 1:9))
 
 # Use effect size function on the data sets
-mx_estimates <-
-mx_power <- drop_na(data_list[[2]])
-gee_estimates <- drop_na(data_list[[3]])
-gee_power <- drop_na(data_list[[4]])
+mxestimates <- mx_estimates %>%
+  mutate(Smz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$mz,
+         Sdz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$dz)
+mxpower <- mx_power %>%
+  mutate(Smz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$mz,
+         Sdz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$dz)
+geeestimates <- gee_estimates %>%
+  mutate(Smz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$mz,
+         Sdz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$dz)
+geepower <- gee_power %>%
+  mutate(Smz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$mz,
+         Sdz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$dz)
 
 # Write data frames to CSV files
-write.csv(mxestimates, file = "2024-05-24_mx_estimates_appendix.csv", row.names = TRUE)
-write.csv(mxpower, file = "2024-05-24_mx_power_appendix.csv", row.names = TRUE)
-write.csv(geeestimates, file = "2024-05-24_gee_estimates_appendix.csv", row.names = TRUE)
-write.csv(geepower, file = "2024-05-24_gee_power_appendix.csv", row.names = TRUE)
-
-# Read in these files
-mx_estimates <- read.csv("2024-05-07_mx_estimates_appendix.csv")
-mx_power <- read.csv("2024-05-07_mx_power_appendix.csv")
-gee_estimates <- read.csv("2024-05-07_gee_estimates_appendix.csv")
-gee_power <- read.csv("2024-05-07_gee_power_appendix.csv")
+write.csv(mxestimates, file = "2024-05-28_mx_estimates_appendix.csv", row.names = TRUE)
+write.csv(mxpower, file = "2024-05-28_mx_power_appendix.csv", row.names = TRUE)
+write.csv(geeestimates, file = "2024-05-28_gee_estimates_appendix.csv", row.names = TRUE)
+write.csv(geepower, file = "2024-05-28_gee_power_appendix.csv", row.names = TRUE)
 
 
 # ISSUES
@@ -909,8 +911,4 @@ gee_power <- read.csv("2024-05-07_gee_power_appendix.csv")
 # Why is there another type of sibling interaction model?
 
 # Do some lintering and code-formatting.
-# Have a closer look at the number of rows and columns for final_power & final_estimates.
-# Make sure I can get out mx and gee regression results at the same time
-
-# Look at the exact conceptualization behind
 
