@@ -6,10 +6,6 @@ app_mx_power <- read.csv("2024-05-28_mx_power_appendix.csv")
 app_gee_estimates <- read.csv("2024-05-28_gee_estimates_appendix.csv")
 app_gee_power <- read.csv("2024-05-28_gee_power_appendix.csv")
 
-# Remove error in power file
-colnames(app_mx_power)[12:27] <- c("p4", "p3","p1", "p2", "p8", "p7", "p5", "p6",
-                                   "p12", "p11", "p9", "p10", "p16", "p15", "p13", "p14")
-
 # Extract data from tables for running text
 
 # MZ and DZ
@@ -56,7 +52,6 @@ app_mx_estimates %>%
 
 # Re-do table 1
 app_mx_power %>%
-  filter(round(a^2, 3) == .4, PGS == 0.1) %>%
   select(g, b, p1, p2, p3, p4, Smz, Sdz) %>%
   arrange(as.logical(b) + as.logical(g), b) %>%
   mutate(Smz = scales::percent(Smz), Sdz = scales::percent(Sdz),
