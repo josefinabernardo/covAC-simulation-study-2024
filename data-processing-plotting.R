@@ -6,9 +6,23 @@ app_mx_power <- read.csv("2024-05-28_mx_power_appendix.csv")
 app_gee_estimates <- read.csv("2024-05-28_gee_estimates_appendix.csv")
 app_gee_power <- read.csv("2024-05-28_gee_power_appendix.csv")
 
+# Remove error in power file
+colnames(app_mx_power)[12:27] <- c("p4", "p3","p1", "p2", "p8", "p7", "p5", "p6",
+                                   "p12", "p11", "p9", "p10", "p16", "p15", "p13", "p14")
+
 # Extract data from tables for running text
 
 # MZ and DZ
+app_mx_power %>%
+  filter(round(a^2, 3) == .4, PGS == 0.1) %>%
+  select(g, b, p1, p2, p3, p4, Smz, Sdz) %>%
+  arrange(as.logical(b) + as.logical(g), b) %>%
+  mutate(Smz = scales::percent(Smz), Sdz = scales::percent(Sdz)) %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = p1,
+         `SI (m2)` = p2, `CT (m3)` = p3, `SI (m3)` = p4) %>%
+  write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
+  #write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
+
 app_mx_estimates %>%
   filter(round(a^2, 3) == .4, PGS == 0.1) %>%
   select(g, b, e1, e2, e3, e4, Smz, Sdz) %>%
@@ -16,9 +30,40 @@ app_mx_estimates %>%
   mutate(Smz = scales::percent(Smz), Sdz = scales::percent(Sdz)) %>%
   rename(`CT` = g, `SI` = b, `CT (m1)` = e1,
     `SI (m2)` = e2, `CT (m3)` = e3, `SI (m3)` = e4) %>%
-  write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
+  write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
+  #write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
 
 # DZ only
+app_mx_power %>%
+  filter(round(a^2, 3) == .4, PGS == 0.1) %>%
+  select(g, b, p13, p14, p15, p16, Smz, Sdz) %>%
+  arrange(as.logical(b) + as.logical(g), b) %>%
+  mutate(Smz = scales::percent(Smz), Sdz = scales::percent(Sdz)) %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = p13,
+         `SI (m2)` = p14, `CT (m3)` = p15, `SI (m3)` = p16) %>%
+  write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
+  #write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
+
+app_mx_estimates %>%
+  filter(round(a^2, 3) == .4, PGS == 0.1) %>%
+  select(g, b, e13, e14, e15, e16, Smz, Sdz) %>%
+  arrange(as.logical(b) + as.logical(g), b) %>%
+  mutate(Smz = scales::percent(Smz), Sdz = scales::percent(Sdz)) %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = e13,
+         `SI (m2)` = e14, `CT (m3)` = e15, `SI (m3)` = e16) %>%
+  write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
+  #write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
+
+# Re-do table 1
+app_mx_power %>%
+  filter(round(a^2, 3) == .4, PGS == 0.1) %>%
+  select(g, b, p1, p2, p3, p4, Smz, Sdz) %>%
+  arrange(as.logical(b) + as.logical(g), b) %>%
+  mutate(Smz = scales::percent(Smz), Sdz = scales::percent(Sdz),
+         A = round(a^2, 1), C = round(c^2, 1), E = round(e^2, 1)) %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = p1,
+         `SI (m2)` = p2, `CT (m3)` = p3, `SI (m3)` = p4) %>%
+  write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
 
 # DZ-only data
 p13_mx_data <- app_mx_power %>%
@@ -107,3 +152,6 @@ ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Var
   facet_wrap(~PGS_percent) +
   scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
   theme_light()
+
+# Same for estimates :)
+
