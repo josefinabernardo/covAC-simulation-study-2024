@@ -861,15 +861,21 @@ dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
 # data_list <- dolan_simulation_function()
 
 #Run simulation for appendix
-data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
-                         e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15))
+# data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
+#                         e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15))
 
 # data_list <- dolan_simulation_function(a = sqrt(c(.4, .5)), c = sqrt(c(.3, .2)),
 #                          e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15))
 
-# check_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
+# data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
 #                           e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10),
 #                           ct = sqrt(c(0, .0025)), si = sqrt(c(0, .0025)), x = 0)
+
+# Run simulation for more detailed plots
+data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
+                         e = sqrt(.3), nloci = 100, npgsloci = 10,
+                         ct = seq(0,.1,.01), si = seq(0,.1,.01))
+
 
 # Extract data sets
 mx_estimates <- drop_na(data_list[[1]])
@@ -899,10 +905,10 @@ geepower <- gee_power %>%
          Sdz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$dz)
 
 # Write data frames to CSV files
-write.csv(mxestimates, file = "2024-05-28_mx_estimates_appendix.csv", row.names = TRUE)
-write.csv(mxpower, file = "2024-05-28_mx_power_appendix.csv", row.names = TRUE)
-write.csv(geeestimates, file = "2024-05-28_gee_estimates_appendix.csv", row.names = TRUE)
-write.csv(geepower, file = "2024-05-28_gee_power_appendix.csv", row.names = TRUE)
+write.csv(mxestimates, file = "2024-06-04_mx_estimates_ext.csv", row.names = TRUE)
+write.csv(mxpower, file = "2024-06-04_mx_power_ext.csv", row.names = TRUE)
+write.csv(geeestimates, file = "2024-06-04_gee_estimates_ext.csv", row.names = TRUE)
+write.csv(geepower, file = "2024-06-04_gee_power_ext.csv", row.names = TRUE)
 
 
 # ISSUES

@@ -50,15 +50,15 @@ app_mx_estimates %>%
   write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
   #write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
 
-# Re-do table 1
-app_mx_power %>%
-  select(g, b, p1, p2, p3, p4, Smz, Sdz) %>%
-  arrange(as.logical(b) + as.logical(g), b) %>%
+# Re-do table 4 appendix
+app_mx_estimates %>%
   mutate(Smz = scales::percent(Smz), Sdz = scales::percent(Sdz),
-         A = round(a^2, 1), C = round(c^2, 1), E = round(e^2, 1)) %>%
-  rename(`CT` = g, `SI` = b, `CT (m1)` = p1,
-         `SI (m2)` = p2, `CT (m3)` = p3, `SI (m3)` = p4) %>%
-  write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
+         A = round(a^2, 1), C = round(c^2, 1), E = round(e^2, 1),
+         across(e1:e9, round, 2)) %>%
+  select(A, C, E, g, b, PGS, e1, e2, e3, e4, e5, e6, e7, e8, e9, Smz, Sdz) %>%
+  unique() %>%
+  #write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
+  write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
 
 # DZ-only data
 p13_mx_data <- app_mx_power %>%
@@ -148,5 +148,5 @@ ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Var
   scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
   theme_light()
 
-# Same for estimates :)
+# Detailed plots
 
