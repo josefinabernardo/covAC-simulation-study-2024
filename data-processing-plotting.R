@@ -57,8 +57,8 @@ app_mx_estimates %>%
          across(e1:e9, round, 2)) %>%
   select(A, C, E, g, b, PGS, e1, e2, e3, e4, e5, e6, e7, e8, e9, Smz, Sdz) %>%
   unique() %>%
-  #write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
-  write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
+  write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
+  #write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
 
 # DZ-only data
 p13_mx_data <- app_mx_power %>%
@@ -149,4 +149,49 @@ ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Var
   theme_light()
 
 # Detailed plots
+ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
+ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
+
+ext_power <- ext_power %>%
+                rename(`CT` = g, `SI` = b, `CT (m1)` = p1,
+                        `SI (m2)` = p2, `CT (m3)` = p3, `SI (m3)` = p4)
+
+data_noCT <- ext_power[ext_power$CT == 0, ]
+
+# Gather the data for plotting
+data_noCT_long <- gather(data_noCT, key = "variable", value = "value",`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
+
+# Create the plot
+ggplot(data_noCT_long, aes(x = SI, y = value, color = variable)) +
+  geom_line() +
+  geom_point() +
+  labs(title = NULL,
+       x = "SI",
+       y = "Value") +
+  theme_minimal()
+
+# Filter the data for b = 0
+data_b0 <- ext_power[ext_power$b == 0, ]
+
+# Gather the data for plotting
+data_b0_long <- gather(data_b0, key = "variable", value = "value", p1, p2, p3, p4)
+
+# Create the plot
+ggplot(data_b0_long, aes(x = g, y = value, color = variable)) +
+  geom_line() +
+  geom_point() +
+  labs(title = NULL,
+       x = "g",
+       y = "Value") +
+  theme_minimal()
+
+# Filter the data for g = 0
+data_g0 <- ext_power[ext_power$g == 0, ]
+data_g0_long <- gather(data_g0, key = "variable", value = "value", p1, p2, p3, p4)
+data_g0_long$x_value <- data_g0_long$b
+
+# Filter the data for b = 0
+data_b0 <- ext_power[ext_power$b == 0, ]
+data_b0_long <- gather(data_b0, key = "variable", value = "value", p1, p2, p3, p4)
+data_b0_long$x_value <- data_b0_long$g
 

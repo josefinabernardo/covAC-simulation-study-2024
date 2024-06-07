@@ -775,25 +775,26 @@ dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
 
           # Power
           ncp_tmp <- c(
-            mxCompare(Model_1g_out, Model_1bg_out)[2,7],
             mxCompare(Model_1b_out, Model_1bg_out)[2,7],
-            mxCompare(Model_1out, Model_1b_out)[2,7],
+            mxCompare(Model_1g_out, Model_1bg_out)[2,7],
             mxCompare(Model_1out, Model_1g_out)[2,7],
+            mxCompare(Model_1out, Model_1b_out)[2,7],
 
-            mxCompare(Model_2g_out, Model_2bg_out)[2,7],
             mxCompare(Model_2b_out, Model_2bg_out)[2,7],
-            mxCompare(Model_2out, Model_2b_out)[2,7],
+            mxCompare(Model_2g_out, Model_2bg_out)[2,7],
             mxCompare(Model_2out, Model_2g_out)[2,7],
+            mxCompare(Model_2out, Model_2b_out)[2,7],
 
-            mxCompare(Model_3g_out, Model_3bg_out)[2,7],
             mxCompare(Model_3b_out, Model_3bg_out)[2,7],
-            mxCompare(Model_3out, Model_3b_out)[2,7],
+            mxCompare(Model_3g_out, Model_3bg_out)[2,7],
             mxCompare(Model_3out, Model_3g_out)[2,7],
+            mxCompare(Model_3out, Model_3b_out)[2,7],
 
-            mxCompare(Model_4g_out, Model_4bg_out)[2,7],
+
             mxCompare(Model_4b_out, Model_4bg_out)[2,7],
-            mxCompare(Model_4out, Model_4b_out)[2,7],
-            mxCompare(Model_4out, Model_4g_out)[2,7]
+            mxCompare(Model_4g_out, Model_4bg_out)[2,7],
+            mxCompare(Model_4out, Model_4g_out)[2,7],
+            mxCompare(Model_4out, Model_4b_out)[2,7]
           )
 
           ncp_power_tmp <- sapply(ncp_tmp, function(ncp) {
