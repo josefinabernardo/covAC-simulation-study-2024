@@ -216,10 +216,10 @@ dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
           # add sum of mother and father prs and add mean of twins prs ... we need these additional variables to
           #                                                                detect cov(AC)
           #
-          addmz_e=cbind(phdatmz_e$pgsm+phdatmz_e$pgsf, (phdatmz_e$pgst1+phdatmz_e$pgst2)/2)
+          addmz_e=cbind(phdatmz_e$pgsm+phdatmz_e$pgsf, (phdatmz_e$pgst1+phdatmz_e$pgst2)) # removed /2 here
           colnames(addmz_e) = c('pgsmf','mpgst')
           phdatmz_e = cbind(phdatmz_e, addmz_e)
-          adddz_e=cbind(phdatdz_e$pgsm+phdatdz_e$pgsf, (phdatdz_e$pgst1+phdatdz_e$pgst2)/2)
+          adddz_e=cbind(phdatdz_e$pgsm+phdatdz_e$pgsf, (phdatdz_e$pgst1+phdatdz_e$pgst2)) # removed /2 here
           colnames(adddz_e) = c('pgsmf','mpgst')
           phdatdz_e = cbind(phdatdz_e, adddz_e)
           # add sum and mean
@@ -873,9 +873,14 @@ dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
 #                           ct = sqrt(c(0, .0025)), si = sqrt(c(0, .0025)), x = 0)
 
 # Run simulation for more detailed plots
+# data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
+#                         e = sqrt(.3), nloci = 100, npgsloci = 10,
+#                         ct = seq(0,.1,.01), si = seq(0,.1,.01))
+
+# DEBUGGING
 data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
-                         e = sqrt(.3), nloci = 100, npgsloci = 10,
-                         ct = seq(0,.1,.01), si = seq(0,.1,.01))
+                          e = sqrt(.3), nloci = 100, npgsloci = c(2,5,10,15),
+                          ct = sqrt(c(0, .0025, 0.01)), si = sqrt(c(0, .0025, 0.01)))
 
 
 # Extract data sets
@@ -906,10 +911,10 @@ geepower <- gee_power %>%
          Sdz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$dz)
 
 # Write data frames to CSV files
-write.csv(mxestimates, file = "2024-06-04_mx_estimates_ext.csv", row.names = TRUE)
-write.csv(mxpower, file = "2024-06-04_mx_power_ext.csv", row.names = TRUE)
-write.csv(geeestimates, file = "2024-06-04_gee_estimates_ext.csv", row.names = TRUE)
-write.csv(geepower, file = "2024-06-04_gee_power_ext.csv", row.names = TRUE)
+write.csv(mxestimates, file = "debug_mx_estimates.csv", row.names = TRUE)
+write.csv(mxpower, file = "debug_mx_power.csv", row.names = TRUE)
+write.csv(geeestimates, file = "debug_gee_estimates.csv", row.names = TRUE)
+write.csv(geepower, file = "debug_gee_power.csv", row.names = TRUE)
 
 
 # ISSUES

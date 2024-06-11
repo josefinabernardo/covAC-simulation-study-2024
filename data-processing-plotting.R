@@ -6,6 +6,13 @@ app_mx_power <- read.csv("2024-05-28_mx_power_appendix.csv")
 app_gee_estimates <- read.csv("2024-05-28_gee_estimates_appendix.csv")
 app_gee_power <- read.csv("2024-05-28_gee_power_appendix.csv")
 
+# Debugged data
+app_mx_estimates <- read.csv("debug_mx_estimates.csv")
+app_mx_power <- read.csv("debug_mx_power.csv")
+app_gee_estimates <- read.csv("debug_gee_estimates.csv")
+app_gee_power <- read.csv("debug_gee_power.csv")
+
+
 # Extract data from tables for running text
 
 # MZ and DZ
@@ -59,6 +66,9 @@ app_mx_estimates %>%
   unique() %>%
   write.table(file = pipe("pbcopy"), row.names = FALSE, quote = FALSE, sep = ",")
   #write.table(file = "clipboard", row.names = FALSE, quote = FALSE, sep = ",")
+
+
+# START PLOTS
 
 # DZ-only data
 p13_mx_data <- app_mx_power %>%
@@ -148,7 +158,13 @@ ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Var
   scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
   theme_light()
 
-# Detailed plots
+
+# ESTIMATES
+
+
+
+
+# DETAILED PLOTS
 ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
 ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
 
@@ -171,13 +187,14 @@ ggplot(data_noCT_long, aes(x = SI, y = value, color = variable)) +
   theme_minimal()
 
 # Filter the data for b = 0
-data_b0 <- ext_power[ext_power$b == 0, ]
+data_b0 <- ext_power[ext_power$SI== 0, ]
 
 # Gather the data for plotting
-data_b0_long <- gather(data_b0, key = "variable", value = "value", p1, p2, p3, p4)
+data_b0_long <- gather(data_b0, key = "variable", value = "value", 'CT (m1)',
+                       'SI (m2)', 'CT (m3)', 'SI (m3)')
 
 # Create the plot
-ggplot(data_b0_long, aes(x = g, y = value, color = variable)) +
+ggplot(data_b0_long, aes(x = CT, y = value, color = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
