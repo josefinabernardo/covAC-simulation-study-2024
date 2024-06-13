@@ -110,8 +110,8 @@ dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
           #                 1   2    3    4   5     6     7      8   9  10   11
           SLmz=SLdz=diag(c(VA1, VP, VA1, VP, VA1/2, VP/2,VA1/2, VP/2,VC, VE, VE))
           #
-          #SLmz[5,7]=SLmz[7,5]=VA1/2   #
-          #SLmz[6,8]=SLmz[8,6]=VP/2    #
+          SLmz[5,7]=SLmz[7,5]=VA1/2   # commented in
+          SLmz[6,8]=SLmz[8,6]=VP/2    # commented in
           #
           # simulate the latent variables exactly
           #
@@ -216,10 +216,10 @@ dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
           # add sum of mother and father prs and add mean of twins prs ... we need these additional variables to
           #                                                                detect cov(AC)
           #
-          addmz_e=cbind(phdatmz_e$pgsm+phdatmz_e$pgsf, (phdatmz_e$pgst1+phdatmz_e$pgst2)) # removed /2 here
+          addmz_e=cbind(phdatmz_e$pgsm+phdatmz_e$pgsf, (phdatmz_e$pgst1+phdatmz_e$pgst2)/2)
           colnames(addmz_e) = c('pgsmf','mpgst')
           phdatmz_e = cbind(phdatmz_e, addmz_e)
-          adddz_e=cbind(phdatdz_e$pgsm+phdatdz_e$pgsf, (phdatdz_e$pgst1+phdatdz_e$pgst2)) # removed /2 here
+          adddz_e=cbind(phdatdz_e$pgsm+phdatdz_e$pgsf, (phdatdz_e$pgst1+phdatdz_e$pgst2)/2)
           colnames(adddz_e) = c('pgsmf','mpgst')
           phdatdz_e = cbind(phdatdz_e, adddz_e)
           # add sum and mean
