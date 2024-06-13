@@ -164,6 +164,59 @@ app_gee_estimates %>%
        y = "Value") +
   theme_minimal()
 
+# COMPARE THESE RESULTS TO THE RESULTS FROM CONOR's ORIGINAL SCRIPT
+iest <- c(seq(1,27,3))
+original_gee_power <- as.data.frame(cbind(setkeep[,1:10], round(reskeep[,ipow],3)))
+original_gee_estimates <- as.data.frame(cbind(setkeep[,1:10], round(reskeep[,iest],3)))
+
+original_gee_power %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = mzdzmfpgs_p, `SI (m2)` = mzdzmpgsm_p, `CT (m3)` = mzdzmfpgs_m_p, `SI (m3)` = mzdzmpgst_mf_p) %>%
+  filter(CT == 0) %>%
+  gather(key = "variable", value = "value",`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`) %>%
+  ggplot(aes(x = SI, y = value, color = variable)) +
+  geom_line() +
+  geom_point() +
+  labs(title = NULL,
+       x = "SI",
+       y = "Value") +
+  theme_minimal()
+
+original_gee_power %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = mzdzmfpgs_p, `SI (m2)` = mzdzmpgsm_p, `CT (m3)` = mzdzmfpgs_m_p, `SI (m3)` = mzdzmpgst_mf_p) %>%
+  filter(SI == 0) %>%
+  gather(key = "variable", value = "value",`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`) %>%
+  ggplot(aes(x = CT, y = value, color = variable)) +
+  geom_line() +
+  geom_point() +
+  labs(title = NULL,
+       x = "CT",
+       y = "Value") +
+  theme_minimal()
+
+original_gee_estimates %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = mzdzmfpgs_e, `SI (m2)` = mzdzmpgsm_e, `CT (m3)` = mzdzmfpgs_m_e, `SI (m3)` = mzdzmpgst_mf_e) %>%
+  filter(CT == 0) %>%
+  gather(key = "variable", value = "value",`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`) %>%
+  ggplot(aes(x = SI, y = value, color = variable)) +
+  geom_line() +
+  geom_point() +
+  labs(title = NULL,
+       x = "SI",
+       y = "Value") +
+  theme_minimal()
+
+original_gee_estimates %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = mzdzmfpgs_e, `SI (m2)` = mzdzmpgsm_e, `CT (m3)` = mzdzmfpgs_m_e, `SI (m3)` = mzdzmpgst_mf_e) %>%
+  filter(SI == 0) %>%
+  gather(key = "variable", value = "value",`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`) %>%
+  ggplot(aes(x = CT, y = value, color = variable)) +
+  geom_line() +
+  geom_point() +
+  labs(title = NULL,
+       x = "CT",
+       y = "Value") +
+  theme_minimal()
+
 # Comparing combined sample (Model 1 OpenMx vs. Model 3 Gee)
 mzdz_power_mx <- app_mx_power %>%
   select(b, g, p1, p2, p3 , p4) %>%
