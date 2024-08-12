@@ -182,24 +182,25 @@ ggplot(data_noCT_long, aes(x = SI, y = value, color = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
-       x = "SI",
-       y = "Value") +
+       x = "Sibling Interaction",
+       y = "Power",
+       color = "Parameter") +
   theme_minimal()
 
 # Filter the data for b = 0
-data_b0 <- ext_power[ext_power$SI== 0, ]
+data_noSI <- ext_power[ext_power$SI== 0, ]
 
 # Gather the data for plotting
-data_b0_long <- gather(data_b0, key = "variable", value = "value", 'CT (m1)',
-                       'SI (m2)', 'CT (m3)', 'SI (m3)')
+data_noSI_long <- gather(data_noSI, key = "variable", value = "value", `CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
 
 # Create the plot
-ggplot(data_b0_long, aes(x = CT, y = value, color = variable)) +
+ggplot(data_noSI_long, aes(x = CT, y = value, color = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
-       x = "g",
-       y = "Value") +
+       x = "Cultural Transmission",
+       y = "Power",
+       color = "Parameter") +
   theme_minimal()
 
 # Filter the data for g = 0

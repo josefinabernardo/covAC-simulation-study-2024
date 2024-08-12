@@ -17,7 +17,7 @@ default_ct <- sqrt(c(0, .0025, .01))
 default_si <- sqrt(c(0, .0025, .01))
 
 # Function to simulate data
-dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
+dolan_simulation_function <- function(
              alpha = .05, # Alpha for power
              cmethod = 'independence', # Gee Covariance Structure
              seed = NA, # Set a seed if desired
@@ -27,7 +27,7 @@ dolan_simulation_function <- function(nrep = 2000, # Number of repetitions
              a = default_a, # Additive genetic path coefficient
              c = default_c, # Shared environmental path coefficient
              e = default_e, # Unique environmental path coefficient
-             x = default_x, # Who's to say
+             x = default_x, # Sibling interaction at the phenotypic level
              ct = default_ct, # Cultural Transmission - Parent genotype to child phenotype
              si = default_si, # Sibling Interaction - Sibling 1 genotype to sibling 2 phenotype
              nloci = 100, # Number of diallelic loci

@@ -37,6 +37,7 @@ write.csv(mxpower, file = "debug_mx_power.csv", row.names = TRUE)
 write.csv(geeestimates, file = "debug_gee_estimates.csv", row.names = TRUE)
 write.csv(geepower, file = "debug_gee_power.csv", row.names = TRUE)
 
+# READING IN THE DATA STARTS HERE
 # Debugged data
 app_mx_estimates <- read.csv("debug_mx_estimates.csv")
 app_mx_power <- read.csv("debug_mx_power.csv")
