@@ -878,9 +878,9 @@ dolan_simulation_function <- function(
 #                         ct = seq(0,.1,.01), si = seq(0,.1,.01))
 
 # DEBUGGING
-data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
-                          e = sqrt(.3), nloci = 100, npgsloci = c(2,5,10,15),
-                          ct = sqrt(c(0, .0025, 0.01)), si = sqrt(c(0, .0025, 0.01)))
+# data_list <- dolan_simulation_function(a = sqrt(.4), c = sqrt(.3),
+#                          e = sqrt(.3), nloci = 100, npgsloci = c(2,5,10,15),
+#                          ct = sqrt(c(0, .0025, 0.01)), si = sqrt(c(0, .0025, 0.01)))
 
 
 # Extract data sets
