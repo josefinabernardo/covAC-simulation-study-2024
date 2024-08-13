@@ -1,16 +1,17 @@
-# Load in package
-devtools::install_github("josefinabernardo/gnomesims")
-library(gnomesims)
-library(OpenMx)
-
 # Run function for detailed lots in running text
-paper_data <- gnome_mx_simulation(a = sqrt(.4), c = sqrt(.3),
-                                         e = sqrt(.3), nloci = 100, npgsloci = c(2, 5, 10, 15),
-                                         ct = seq(0,.1,.02), si = seq(0,.1,.02))
+paper_data <- dolan_simulation_function(ct = seq(0,.1,.02), si = seq(0,.1,.02),
+                                  nloci = 100,
+                                  npgsloci = c(2, 5, 10, 15))
 
 # Create seperate data sets for processing
 paper_power <- paper_data$power
 paper_estimates <- paper_data$params
+
+paper_power_filtered <- paper_power %>%
+  filter(g %in% seq(0,.1,.02) & b %in% seq(0,.1,.02))
+
+paper_estimates_filtered <- paper_estimates %>%
+  filter(g %in% seq(0,.1,.02)& b %in% seq(0,.1,.02))
 
 # Write to .csv files
 write.csv(paper_estimates, file = "paper_mx_estimates.csv", row.names = TRUE)
