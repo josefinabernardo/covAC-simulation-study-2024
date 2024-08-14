@@ -911,10 +911,10 @@ geepower <- gee_power %>%
          Sdz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$dz)
 
 # Write data frames to CSV files
-write.csv(mxestimates, file = "debug_mx_estimates.csv", row.names = TRUE)
-write.csv(mxpower, file = "debug_mx_power.csv", row.names = TRUE)
-write.csv(geeestimates, file = "debug_gee_estimates.csv", row.names = TRUE)
-write.csv(geepower, file = "debug_gee_power.csv", row.names = TRUE)
+write.csv(mxestimates, file = "2024_08_14_mx_estimates.csv", row.names = TRUE)
+write.csv(mxpower, file = "2024_08_14_mx_power.csv", row.names = TRUE)
+write.csv(geeestimates, file = "2024_08_14_gee_estimates.csv", row.names = TRUE)
+write.csv(geepower, file = "2024_08_14_gee_power.csv", row.names = TRUE)
 
 
 # ISSUES
