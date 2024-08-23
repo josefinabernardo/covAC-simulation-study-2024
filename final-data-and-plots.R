@@ -29,8 +29,9 @@ write.csv(gee_power, file = "paper_gee_power.csv", row.names = TRUE)
 
 # Load in the data sets
 #paper_power <- read.csv("2024_08_14_mx_power.csv")
-#paper_estimates <- read.csv("2024_08_14_mx_estimates.csv")
+#paper_
 
+# Start here if files are already created
 paper_power <- read.csv("paper_mx_power.csv")
 paper_estimates <- read.csv("paper_mx_estimates.csv")
 
@@ -202,46 +203,65 @@ for (var in vars) {
 }
 
 
-# PLot 5 - new version
+# Plot 5 - new version
+plot5_mx_data <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.02), si = seq(0,.12,.04),
+                                             nloci = 100,
+                                             npgsloci = c(2, 5, 10, 15))
+
+plot5_gee_data <- gnomesims::gnome_gee_simulation(ct = seq(0,.1,.02), si = seq(0,.12,.04),
+                                            nloci = 100,
+                                            npgsloci = c(2, 5, 10, 15))
+
+plot5_mx_power <- paper_data$power
+plot5_mx_estimates <- paper_data$params
+
+gee_power <- gee_data$power
+gee_estimates <- gee_data$params
+
 p3_gee_data <- gee_power %>%
-  filter(g == 0) %>%
-  dplyr::select("b", "p3", "PGS") %>%
-  mutate(Variable = "CT", Sample = "MZ & DZ") %>%
-  rename(Confounder = b, Power = p3)
+  dplyr::filter(PGS == .10) %>%
+  dplyr::select("g", "b", "p3") %>%
+  mutate(Variable = "CT") %>%
+  rename("True Parameter" = "g", "Other covAC Source" = "b", "Power" = "p3")
 
 p4_gee_data <- gee_power %>%
-  filter(b == 0) %>%
-  dplyr::select("g", "p4", 'PGS') %>%
-  mutate(Variable = "SI", Sample = "MZ & DZ") %>%
-  rename(Confounder = g, Power = p4)
+  dplyr::filter(PGS == .10) %>%
+  dplyr::select("b", "g", "p4") %>%
+  mutate(Variable = "SI") %>%
+  rename("True Parameter" = "b", "Other covAC Source" = "g", "Power" = "p4")
 
 gee_combi_data <- rbind(p3_gee_data, p4_gee_data) %>%
-  mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%"))) %>%
-  mutate(Method = "Gee")
+  mutate(Method = "Gee",
+         Label = paste0(Method, " (Other Source: ", `Other covAC Source`, ")"))
 
 p3_mx_data <- paper_power %>%
-  filter(g == 0) %>%
-  dplyr::select("b", "p3", "PGS") %>%
-  mutate(Variable = "CT", Sample = "MZ & DZ") %>%
-  rename(Confounder = b, Power = p3)
+  dplyr::filter(PGS == .10) %>%
+  dplyr::select("g", "b", "p3") %>%
+  mutate(Variable = "CT") %>%
+  rename("True Parameter" = "g", "Other covAC Source" = "b", "Power" = "p3")
 
 p4_mx_data <- paper_power %>%
-  filter(b == 0) %>%
-  dplyr::select("g", "p4", 'PGS') %>%
-  mutate(Variable = "SI", Sample = "MZ & DZ") %>%
-  rename(Confounder = g, Power = p4)
+  dplyr::filter(PGS == .10) %>%
+  dplyr::select("b", "g", "p4") %>%
+  mutate(Variable = "SI") %>%
+  rename("True Parameter" = "b", "Other covAC Source" = "g", "Power" = "p4")
 
 mx_combi_data <- rbind(p3_mx_data, p4_mx_data) %>%
-  mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%"))) %>%
-  mutate(Method = "OpenMx")
+  mutate(Method = "OpenMx",
+         Label = paste0(Method, " (Other Source: ", `Other covAC Source`, ")"))
 
 full_combi_data <- rbind(mx_combi_data, gee_combi_data)
 
-ggplot(data = full_combi_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Method)) +
-  geom_line(linewidth = 0.8) +
+ct_data <- full_combi_data %>%
+  dplyr::filter(Variable == "CT")
+
+si_data <- full_combi_data %>%
+  dplyr::filter(Variable == "SI")
+
+ggplot(data = ct_data, mapping = aes(x = `True Parameter`, y = Power, group = as.factor(Label), color = `Other covAC Source`)) +
   geom_point() +
-  facet_wrap(~PGS_percent) +
-  scale_linetype_manual(values = c("Gee" = "dotted", "OpenMx" = "solid")) +
+  geom_line(aes(linetype = Method)) +
   jtools::theme_apa() +
   theme(text = element_text(family = "serif")) +
-  scale_color_viridis_d(name = "Variable")
+  scale_color_viridis_c(name = "Variable")
+
