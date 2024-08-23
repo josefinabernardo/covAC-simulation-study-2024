@@ -1,5 +1,6 @@
 # Install all packages
-devtools::install_github("josefinabernardo/gnomesims")
+# detach("package:gnomesims", unload = TRUE)
+devtools::install_github("josefinabernardo/gnomesims", force = TRUE)
 library(gnomesims)
 library(OpenMx)
 
@@ -106,7 +107,8 @@ ggplot(data_noCT_long, aes(x = SI, y = value, color = variable)) +
        y = "Power",
        color = "Parameter") +
   jtools::theme_apa() +
-  theme(text = element_text(family = "serif"))
+  theme(text = element_text(family = "serif")) +
+  scale_color_viridis_d(name = "variable")
 
 # Plot 4
 # Filter the data for b = 0
@@ -124,9 +126,10 @@ ggplot(data_noSI_long, aes(x = CT, y = value, color = variable)) +
        y = "Power",
        color = "Parameter") +
   jtools::theme_apa() +
-  theme(text = element_text(family = "serif"))
+  theme(text = element_text(family = "serif")) +
+  scale_color_viridis_d(name = "variable")
 
-# Plot 5
+# Plot 5 - old version
 gee_power <- read.csv("paper_gee_power.csv")
 gee_est <- read.csv("paper_gee_estimates.csv")
 
@@ -160,6 +163,85 @@ ggplot(data = full_method_data, mapping = aes(x = Confounder, y = Power, color =
   jtools::theme_apa() +
   theme(text = element_text(family = "serif"))
 
+# Debugging script
+
+# Correlations
+cor_vec <- diag(cor(paper_power[,12:19], gee_power[,12:19]))
+print(round(cor_vec, 4))
+
+# Scatterplots
+vars <- paste0("p", 1:8)
+
+for (var in vars) {
+  p <- ggplot() +
+    geom_point(aes_string(x = paste0("paper_power$", var), y = paste0("gee_power$", var), color = "paper_power$g")) +
+    labs(
+      title = paste("Scatterplot of", var, "vs", var),
+      x = paste("OpenMx", var),
+      y = paste("Gee", var)
+    ) +
+    theme_minimal() +
+    scale_color_viridis_c(name = "Group")
+
+  print(p)
+}
+
+# Scatterlots only with p1
+for (var in vars) {
+  p <- ggplot() +
+    geom_point(aes_string(x = paste0("paper_power$", var), y = gee_power$p1, color = "paper_power$g")) +
+    labs(
+      title = paste("Scatterplot of", var, "vs p1"),
+      x = paste("OpenMx", var),
+      y = paste("Gee 1")
+    ) +
+    theme_minimal() +
+    scale_color_viridis_c(name = "Group")
+
+  print(p)
+}
 
 
+# PLot 5 - new version
+p3_gee_data <- gee_power %>%
+  filter(g == 0) %>%
+  dplyr::select("b", "p3", "PGS") %>%
+  mutate(Variable = "CT", Sample = "MZ & DZ") %>%
+  rename(Confounder = b, Power = p3)
 
+p4_gee_data <- gee_power %>%
+  filter(b == 0) %>%
+  dplyr::select("g", "p4", 'PGS') %>%
+  mutate(Variable = "SI", Sample = "MZ & DZ") %>%
+  rename(Confounder = g, Power = p4)
+
+gee_combi_data <- rbind(p3_gee_data, p4_gee_data) %>%
+  mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%"))) %>%
+  mutate(Method = "Gee")
+
+p3_mx_data <- paper_power %>%
+  filter(g == 0) %>%
+  dplyr::select("b", "p3", "PGS") %>%
+  mutate(Variable = "CT", Sample = "MZ & DZ") %>%
+  rename(Confounder = b, Power = p3)
+
+p4_mx_data <- paper_power %>%
+  filter(b == 0) %>%
+  dplyr::select("g", "p4", 'PGS') %>%
+  mutate(Variable = "SI", Sample = "MZ & DZ") %>%
+  rename(Confounder = g, Power = p4)
+
+mx_combi_data <- rbind(p3_mx_data, p4_mx_data) %>%
+  mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%"))) %>%
+  mutate(Method = "OpenMx")
+
+full_combi_data <- rbind(mx_combi_data, gee_combi_data)
+
+ggplot(data = full_combi_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Method)) +
+  geom_line(linewidth = 0.8) +
+  geom_point() +
+  facet_wrap(~PGS_percent) +
+  scale_linetype_manual(values = c("Gee" = "dotted", "OpenMx" = "solid")) +
+  jtools::theme_apa() +
+  theme(text = element_text(family = "serif")) +
+  scale_color_viridis_d(name = "Variable")
