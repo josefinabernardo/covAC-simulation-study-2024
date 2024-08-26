@@ -204,27 +204,35 @@ for (var in vars) {
 
 
 # Plot 5 - new version
-plot5_mx_data <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.02), si = seq(0,.12,.04),
+plot5_mx_data <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.025), si = seq(0,.1,.025),
                                              nloci = 100,
                                              npgsloci = c(2, 5, 10, 15))
 
-plot5_gee_data <- gnomesims::gnome_gee_simulation(ct = seq(0,.1,.02), si = seq(0,.12,.04),
+plot5_gee_data <- gnomesims::gnome_gee_simulation(ct = seq(0,.1,.025), si = seq(0,.1,.025),
                                             nloci = 100,
                                             npgsloci = c(2, 5, 10, 15))
 
-plot5_mx_power <- paper_data$power
-plot5_mx_estimates <- paper_data$params
+plot5_mx_power <- plot5_mx_data$power
+plot5_mx_estimates <- plot5_mx_data$params
 
-gee_power <- gee_data$power
-gee_estimates <- gee_data$params
+plot5_gee_power <- plot5_gee_data$power
+plot5_gee_estimates <- plot5_gee_data$params
 
-p3_gee_data <- gee_power %>%
+write.csv(plot5_mx_power, "plot5_mx_power_estimates.csv", row.names = TRUE)
+write.csv(plot5_mx_estimates, "plot5_mx_parameter_estimates.csv", row.names = TRUE)
+write.csv(plot5_gee_power, "plot5_gee_power_estimates.csv", row.names = TRUE)
+write.csv(plot5_gee_estimates, "plot5_gee_parameter_estimates.csv", row.names = TRUE)
+
+mx_power5 <- read.csv("plot5_mx_power_estimates.csv")
+gee_power5 <- read.csv("plot5_gee_power_estimates.csv")
+
+p3_gee_data <- gee_power5 %>%
   dplyr::filter(PGS == .10) %>%
   dplyr::select("g", "b", "p3") %>%
   mutate(Variable = "CT") %>%
   rename("True Parameter" = "g", "Other covAC Source" = "b", "Power" = "p3")
 
-p4_gee_data <- gee_power %>%
+p4_gee_data <- gee_power5 %>%
   dplyr::filter(PGS == .10) %>%
   dplyr::select("b", "g", "p4") %>%
   mutate(Variable = "SI") %>%
@@ -234,13 +242,13 @@ gee_combi_data <- rbind(p3_gee_data, p4_gee_data) %>%
   mutate(Method = "Gee",
          Label = paste0(Method, " (Other Source: ", `Other covAC Source`, ")"))
 
-p3_mx_data <- paper_power %>%
+p3_mx_data <- mx_power5 %>%
   dplyr::filter(PGS == .10) %>%
   dplyr::select("g", "b", "p3") %>%
   mutate(Variable = "CT") %>%
   rename("True Parameter" = "g", "Other covAC Source" = "b", "Power" = "p3")
 
-p4_mx_data <- paper_power %>%
+p4_mx_data <- mx_power5 %>%
   dplyr::filter(PGS == .10) %>%
   dplyr::select("b", "g", "p4") %>%
   mutate(Variable = "SI") %>%
@@ -253,15 +261,24 @@ mx_combi_data <- rbind(p3_mx_data, p4_mx_data) %>%
 full_combi_data <- rbind(mx_combi_data, gee_combi_data)
 
 ct_data <- full_combi_data %>%
-  dplyr::filter(Variable == "CT")
+  dplyr::filter(Variable == "CT", `Other covAC Source` %in% c(0, .05, .1))
 
 si_data <- full_combi_data %>%
-  dplyr::filter(Variable == "SI")
+  dplyr::filter(Variable == "SI", `Other covAC Source` %in% c(0, .05, .1))
 
-ggplot(data = ct_data, mapping = aes(x = `True Parameter`, y = Power, group = as.factor(Label), color = `Other covAC Source`)) +
+ggplot(data = ct_data, mapping = aes(x = `True Parameter`, y = Power, group = as.factor(Label), color = as.factor(`Other covAC Source`))) +
   geom_point() +
   geom_line(aes(linetype = Method)) +
   jtools::theme_apa() +
   theme(text = element_text(family = "serif")) +
-  scale_color_viridis_c(name = "Variable")
+  scale_color_viridis_d(name = "Variable") +
+  scale_linetype_manual(values = c("OpenMx" = "solid", "Gee" = "dotted"))
+
+ggplot(data = si_data, mapping = aes(x = `True Parameter`, y = Power, group = as.factor(Label), color = as.factor(`Other covAC Source`))) +
+  geom_point() +
+  geom_line(aes(linetype = Method)) +
+  jtools::theme_apa() +
+  theme(text = element_text(family = "serif")) +
+  scale_color_viridis_d(name = "Variable") +
+  scale_linetype_manual(values = c("OpenMx" = "solid", "Gee" = "dotted"))
 
