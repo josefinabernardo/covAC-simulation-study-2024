@@ -11,7 +11,7 @@ paper_data <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.02), si = seq(0,.1,.
 
 gee_data <- gnomesims::gnome_gee_simulation(ct = seq(0,.1,.02), si = seq(0,.1,.02),
                                            nloci = 100,
-                                           npgsloci = c(2, 5, 10, 15))
+                                           npgsloci = c(2, 5, 10, 15), cmethod = "exchangeable")
 
 # Create seperate data sets for processing
 paper_power <- paper_data$power
