@@ -162,7 +162,8 @@ ggplot(data = full_method_data, mapping = aes(x = Confounder, y = Power, color =
   facet_wrap(~PGS_percent) +
   scale_linetype_manual(values = c("Gee" = "dotted", "OpenMx" = "solid")) +
   jtools::theme_apa() +
-  theme(text = element_text(family = "serif"))
+  theme(text = element_text(family = "serif")) +
+  scale_color_viridis_d()
 
 # Debugging script
 
