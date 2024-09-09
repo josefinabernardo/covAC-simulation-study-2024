@@ -53,12 +53,13 @@ p2_mx_data <- paper_power %>%
 mx_mzdz_data <- rbind(p1_mx_data, p2_mx_data) %>%
   mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%")))
 
-ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable)) +
+plot1 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable)) +
   geom_line(linewidth = 0.8) +
   geom_point() +
   facet_wrap(~PGS_percent) +
   jtools::theme_apa() +
-  theme(text = element_text(family = "serif"))
+  theme(text = element_text(family = "serif")) +
+  scale_color_viridis_d(name = "variable")
 
 # Plot 2 - MZ & DZ vs. DZ-only Power
 p5_mx_data <- paper_power %>%
@@ -78,13 +79,14 @@ mx_dz_data <- rbind(p5_mx_data, p6_mx_data) %>%
 
 full_mx_data <- rbind(mx_mzdz_data, mx_dz_data)
 
-ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Sample)) +
+plot2 <- ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Sample)) +
   geom_line(linewidth = 0.8) +
   geom_point() +
   facet_wrap(~PGS_percent) +
   scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
   jtools::theme_apa() +
-  theme(text = element_text(family = "serif"))
+  theme(text = element_text(family = "serif")) +
+  scale_color_viridis_d(name = "variable")
 
 # Plot 3
 ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
@@ -98,9 +100,11 @@ data_noCT <- ext_power[ext_power$CT == 0, ]
 
 # Gather the data for plotting
 data_noCT_long <- gather(data_noCT, key = "variable", value = "value",`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
+data_noCT_long$variable <- factor(data_noCT_long$variable,
+                                  levels = c("CT (m1)", "SI (m2)", "CT (m3)", "SI (m3)"))
 
 # Create the plot
-ggplot(data_noCT_long, aes(x = SI, y = value, color = variable)) +
+plot3 <- ggplot(data_noCT_long, aes(x = SI, y = value, color = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
@@ -117,9 +121,11 @@ data_noSI <- ext_power[ext_power$SI== 0, ]
 
 # Gather the data for plotting
 data_noSI_long <- gather(data_noSI, key = "variable", value = "value", `CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
+data_noSI_long$variable <- factor(data_noSI_long$variable,
+                                  levels = c("CT (m1)", "SI (m2)", "CT (m3)", "SI (m3)"))
 
 # Create the plot
-ggplot(data_noSI_long, aes(x = CT, y = value, color = variable)) +
+plot4 <- ggplot(data_noSI_long, aes(x = CT, y = value, color = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
@@ -130,10 +136,8 @@ ggplot(data_noSI_long, aes(x = CT, y = value, color = variable)) +
   theme(text = element_text(family = "serif")) +
   scale_color_viridis_d(name = "variable")
 
-# Plot 5 - old version
-gee_power <- read.csv("paper_gee_power.csv")
-gee_est <- read.csv("paper_gee_estimates.csv")
 
+# Plot 5
 p1_gee_data <- gee_power %>%
   filter(g == 0) %>%
   dplyr::select("b", "p1", "PGS") %>%
@@ -147,14 +151,33 @@ p2_gee_data <- gee_power %>%
   rename(Confounder = g, Power = p2)
 
 gee_mzdz_data <- rbind(p1_gee_data, p2_gee_data) %>%
-  mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%"))) %>%
-  mutate(Method = "Gee")
+  mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%")))
+
+gee_mzdz_data$Method <- c("Gee")
+mx_mzdz_data$Method <- c("OpenMx")
+
+full_mzdz_data <- rbind(gee_mzdz_data, mx_mzdz_data)
+
+plot5 <- ggplot(data = full_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Method)) +
+geom_line(linewidth = 0.8) +
+geom_point() +
+facet_wrap(~PGS_percent) +
+scale_linetype_manual(values = c("Gee" = "dotted", "OpenMx" = "solid")) +
+jtools::theme_apa() +
+theme(text = element_text(family = "serif")) +
+scale_color_viridis_d(name = "variable")
 
 
-mx_mzdz_data <- mx_mzdz_data %>%
-  mutate(Method = "OpenMx")
+# Set width and height in inches (1 inch = 25.4 mm)
+width <- 200 / 25.4  # Convert 200 mm to inches
+height <- 150 / 25.4  # Convert 150 mm to inches
 
-full_method_data <- rbind(mx_mzdz_data, gee_mzdz_data)
+# Export each plot as a PDF with the desired size
+ggsave("plot1.pdf", plot = plot1, device = "pdf", width = width, height = height)
+ggsave("plot2.pdf", plot = plot2, device = "pdf", width = width, height = height)
+ggsave("plot3.pdf", plot = plot3, device = "pdf", width = width, height = height)
+ggsave("plot4.pdf", plot = plot4, device = "pdf", width = width, height = height)
+ggsave("plot5.pdf", plot = plot5, device = "pdf", width = width, height = height)
 
 ggplot(data = full_method_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Method)) +
   geom_line(linewidth = 0.8) +
@@ -165,121 +188,17 @@ ggplot(data = full_method_data, mapping = aes(x = Confounder, y = Power, color =
   theme(text = element_text(family = "serif")) +
   scale_color_viridis_d()
 
-# Debugging script
+# Calculate PGS Predictive Power
+gnome_pgs_pred <- function(a, c, e, g, b, pgs_prop) {
 
-# Correlations
-cor_vec <- diag(cor(paper_power[,12:19], gee_power[,12:19]))
-print(round(cor_vec, 4))
+  # Phenotypic covariances for MZ and DZ
+  smz = 2 * (g + a/2 + b/2)**2 + (a/2 + b/2) * a + (a/2 + b/2) * b + c**2 + e**2
+  sdz = 2 * (g + a/2 + b/2)**2 + a**2/2 + b**2/2 + c**2 + e**2
 
-# Scatterplots
-vars <- paste0("p", 1:8)
+  # Variance Increase
+  effect_mz <- smz - 1
+  effect_dz <- sdz - 1
 
-for (var in vars) {
-  p <- ggplot() +
-    geom_point(aes_string(x = paste0("paper_power$", var), y = paste0("gee_power$", var), color = "paper_power$g")) +
-    labs(
-      title = paste("Scatterplot of", var, "vs", var),
-      x = paste("OpenMx", var),
-      y = paste("Gee", var)
-    ) +
-    theme_minimal() +
-    scale_color_viridis_c(name = "Group")
-
-  print(p)
+  effect = list(mz = effect_mz, dz = effect_dz)
+  return(effect)
 }
-
-# Scatterlots only with p1
-for (var in vars) {
-  p <- ggplot() +
-    geom_point(aes_string(x = paste0("paper_power$", var), y = gee_power$p1, color = "paper_power$g")) +
-    labs(
-      title = paste("Scatterplot of", var, "vs p1"),
-      x = paste("OpenMx", var),
-      y = paste("Gee 1")
-    ) +
-    theme_minimal() +
-    scale_color_viridis_c(name = "Group")
-
-  print(p)
-}
-
-
-# Plot 5 - new version
-plot5_mx_data <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.025), si = seq(0,.1,.025),
-                                             nloci = 100,
-                                             npgsloci = c(2, 5, 10, 15))
-
-plot5_gee_data <- gnomesims::gnome_gee_simulation(ct = seq(0,.1,.025), si = seq(0,.1,.025),
-                                            nloci = 100,
-                                            npgsloci = c(2, 5, 10, 15))
-
-plot5_mx_power <- plot5_mx_data$power
-plot5_mx_estimates <- plot5_mx_data$params
-
-plot5_gee_power <- plot5_gee_data$power
-plot5_gee_estimates <- plot5_gee_data$params
-
-write.csv(plot5_mx_power, "plot5_mx_power_estimates.csv", row.names = TRUE)
-write.csv(plot5_mx_estimates, "plot5_mx_parameter_estimates.csv", row.names = TRUE)
-write.csv(plot5_gee_power, "plot5_gee_power_estimates.csv", row.names = TRUE)
-write.csv(plot5_gee_estimates, "plot5_gee_parameter_estimates.csv", row.names = TRUE)
-
-mx_power5 <- read.csv("plot5_mx_power_estimates.csv")
-gee_power5 <- read.csv("plot5_gee_power_estimates.csv")
-
-p3_gee_data <- gee_power5 %>%
-  dplyr::filter(PGS == .10) %>%
-  dplyr::select("g", "b", "p3") %>%
-  mutate(Variable = "CT") %>%
-  rename("True Parameter" = "g", "Other covAC Source" = "b", "Power" = "p3")
-
-p4_gee_data <- gee_power5 %>%
-  dplyr::filter(PGS == .10) %>%
-  dplyr::select("b", "g", "p4") %>%
-  mutate(Variable = "SI") %>%
-  rename("True Parameter" = "b", "Other covAC Source" = "g", "Power" = "p4")
-
-gee_combi_data <- rbind(p3_gee_data, p4_gee_data) %>%
-  mutate(Method = "Gee",
-         Label = paste0(Method, " (Other Source: ", `Other covAC Source`, ")"))
-
-p3_mx_data <- mx_power5 %>%
-  dplyr::filter(PGS == .10) %>%
-  dplyr::select("g", "b", "p3") %>%
-  mutate(Variable = "CT") %>%
-  rename("True Parameter" = "g", "Other covAC Source" = "b", "Power" = "p3")
-
-p4_mx_data <- mx_power5 %>%
-  dplyr::filter(PGS == .10) %>%
-  dplyr::select("b", "g", "p4") %>%
-  mutate(Variable = "SI") %>%
-  rename("True Parameter" = "b", "Other covAC Source" = "g", "Power" = "p4")
-
-mx_combi_data <- rbind(p3_mx_data, p4_mx_data) %>%
-  mutate(Method = "OpenMx",
-         Label = paste0(Method, " (Other Source: ", `Other covAC Source`, ")"))
-
-full_combi_data <- rbind(mx_combi_data, gee_combi_data)
-
-ct_data <- full_combi_data %>%
-  dplyr::filter(Variable == "CT", `Other covAC Source` %in% c(0, .05, .1))
-
-si_data <- full_combi_data %>%
-  dplyr::filter(Variable == "SI", `Other covAC Source` %in% c(0, .05, .1))
-
-ggplot(data = ct_data, mapping = aes(x = `True Parameter`, y = Power, group = as.factor(Label), color = as.factor(`Other covAC Source`))) +
-  geom_point() +
-  geom_line(aes(linetype = Method)) +
-  jtools::theme_apa() +
-  theme(text = element_text(family = "serif")) +
-  scale_color_viridis_d(name = "Variable") +
-  scale_linetype_manual(values = c("OpenMx" = "solid", "Gee" = "dotted"))
-
-ggplot(data = si_data, mapping = aes(x = `True Parameter`, y = Power, group = as.factor(Label), color = as.factor(`Other covAC Source`))) +
-  geom_point() +
-  geom_line(aes(linetype = Method)) +
-  jtools::theme_apa() +
-  theme(text = element_text(family = "serif")) +
-  scale_color_viridis_d(name = "Variable") +
-  scale_linetype_manual(values = c("OpenMx" = "solid", "Gee" = "dotted"))
-
