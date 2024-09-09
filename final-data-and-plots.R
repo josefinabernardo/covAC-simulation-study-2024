@@ -189,11 +189,14 @@ ggplot(data = full_method_data, mapping = aes(x = Confounder, y = Power, color =
   scale_color_viridis_d()
 
 # Calculate PGS Predictive Power
-gnome_pgs_pred <- function(a, c, e, g, b, pgs_prop) {
+gnome_pgs_pred <- function(a, c, e, g, b, pgs_prop, vA = 1, vC = 1, vE = 1) {
 
-  # Phenotypic covariances for MZ and DZ
+  # Phenotypic variances
   smz = 2 * (g + a/2 + b/2)**2 + (a/2 + b/2) * a + (a/2 + b/2) * b + c**2 + e**2
   sdz = 2 * (g + a/2 + b/2)**2 + a**2/2 + b**2/2 + c**2 + e**2
+
+  Ph_mz = 2*(g+a/2+b/2)**2 *vA +a**2*vA /2+b**2*vA /2+c**2*vC+e**2*vE
+  Ph_dz = 2*(g+a/2+b/2)**2 *vA +a**2*vA /2+b**2*vA /2+c**2*vC+e**2*vE
 
   # Variance Increase
   effect_mz <- smz - 1
