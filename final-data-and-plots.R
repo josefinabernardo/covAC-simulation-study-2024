@@ -179,6 +179,13 @@ ggsave("plot3.pdf", plot = plot3, device = "pdf", width = width, height = height
 ggsave("plot4.pdf", plot = plot4, device = "pdf", width = width, height = height)
 ggsave("plot5.pdf", plot = plot5, device = "pdf", width = width, height = height)
 
+ggsave("plot1.jpg", plot = plot1, device = "jpeg", width = width, height = height, dpi = 300)
+ggsave("plot2.jpg", plot = plot2, device = "jpeg", width = width, height = height, dpi = 300)
+ggsave("plot3.jpg", plot = plot3, device = "jpeg", width = width, height = height, dpi = 300)
+ggsave("plot4.jpg", plot = plot4, device = "jpeg", width = width, height = height, dpi = 300)
+ggsave("plot5.jpg", plot = plot5, device = "jpeg", width = width, height = height, dpi = 300)
+
+
 ggplot(data = full_method_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Method)) +
   geom_line(linewidth = 0.8) +
   geom_point() +
