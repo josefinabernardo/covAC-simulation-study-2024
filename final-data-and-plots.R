@@ -294,3 +294,172 @@ cat(paste0(capture.output(write.csv(gee_appendix_table3, row.names = FALSE, quot
 
 # Convert gee_appendix_table4 to CSV format without index and print
 cat(paste0(capture.output(write.csv(gee_appendix_table4, row.names = FALSE, quote = FALSE)), collapse = "\n"))
+
+# Plots powerpoint
+# Plot 3
+ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
+ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
+
+# Rename columns with full descriptions
+ext_power <- ext_power %>%
+  rename(`CT` = g,
+         `SI` = b,
+         `Cultural Transmission Only` = p1,
+         `Sibling Interaction Only` = p2,
+         `Cultural Transmission - Combined Model` = p3,
+         `Sibling Interaction - Combined Model` = p4)
+
+# Filter the data where CT = 0 for plotting
+data_noCT <- ext_power[ext_power$CT == 0, ]
+
+# Gather the data for plotting
+data_noCT_long <- gather(data_noCT, key = "variable", value = "value",
+                         `Cultural Transmission Only`,
+                         `Sibling Interaction Only`,
+                         `Cultural Transmission - Combined Model`,
+                         `Sibling Interaction - Combined Model`)
+
+# Ensure correct ordering of factor levels
+data_noCT_long$variable <- factor(data_noCT_long$variable,
+                                  levels = c("Cultural Transmission Only",
+                                             "Sibling Interaction Only",
+                                             "Cultural Transmission - Combined Model",
+                                             "Sibling Interaction - Combined Model"))
+
+# Create the plot for data_noCT
+ggplot(data_noCT_long, aes(x = SI, y = value, color = variable, shape = variable)) +
+  geom_line(linewidth = 1.2) +  # Adjust line thickness
+  geom_point(size = 3) +   # Adjust point size
+  labs(x = "Sibling Interaction", y = "Power", color = "Parameter", shape = "Parameter") +  # Ensure both have the same label
+  scale_color_manual(values = c("red", "blue", "turquoise", "purple")) +
+  scale_shape_manual(values = c(16, 17, 18, 19)) +
+  theme_minimal()
+
+
+# Plot 4: Filter the data where SI = 0 for plotting
+data_noSI <- ext_power[ext_power$SI == 0, ]
+
+# Gather the data for plotting
+data_noSI_long <- gather(data_noSI, key = "variable", value = "value",
+                         `Cultural Transmission Only`,
+                         `Sibling Interaction Only`,
+                         `Cultural Transmission - Combined Model`,
+                         `Sibling Interaction - Combined Model`)
+
+# Ensure correct ordering of factor levels
+data_noSI_long$variable <- factor(data_noSI_long$variable,
+                                  levels = c("Cultural Transmission Only",
+                                             "Sibling Interaction Only",
+                                             "Cultural Transmission - Combined Model",
+                                             "Sibling Interaction - Combined Model"))
+
+# Create the plot
+ggplot(data_noSI_long, aes(x = CT, y = value, color = variable, shape = variable)) +
+  geom_line(linewidth = 1.2) +  # Adjust line thickness
+  geom_point(size = 3) +   # Adjust point size
+  labs(x = "Cultural Transmission", y = "Power", color = "Parameter", shape = "Parameter") +  # Ensure both have the same label
+  scale_color_manual(values = c("red", "blue", "turquoise", "purple")) +
+  scale_shape_manual(values = c(16, 17, 18, 19)) +
+  theme_minimal()
+
+
+paper_power %>%
+  filter(PGS == 0.1) %>%
+  ggplot(aes(x = g, y = b, fill = p1)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.2f", p1),
+                color = ifelse(p1 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
+
+paper_power %>%
+  filter(PGS == 0.1) %>%
+  ggplot(aes(x = g, y = b, fill = p2)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.2f", p2),
+                color = ifelse(p2 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
+
+paper_power %>%
+  filter(PGS == 0.1) %>%
+  ggplot(aes(x = g, y = b, fill = p3)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.2f", p3),
+                color = ifelse(p3 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
+
+paper_power %>%
+  filter(PGS == 0.1) %>%
+  ggplot(aes(x = g, y = b, fill = p4)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.2f", p4),
+                color = ifelse(p4 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
+
+
+# resentation Appendix
+plot2 <- ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Sample)) +
+  geom_line(linewidth = 0.8) +
+  geom_point() +
+  facet_wrap(~PGS_percent) +
+  scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
+  jtools::theme_apa() +
+  theme(text = element_text(family = "serif")) +
+  scale_color_viridis_d(name = "variable")
+
+# Plot 3
+ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
+ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
+
+ext_power <- ext_power %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = p1,
+         `SI (m2)` = p2, `CT (m3)` = p3, `SI (m3)` = p4)
+
+data_noCT <- ext_power[ext_power$CT == 0, ]
+
+# Gather the data for plotting
+data_noCT_long <- gather(data_noCT, key = "variable", value = "value",`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
+data_noCT_long$variable <- factor(data_noCT_long$variable,
+                                  levels = c("CT (m1)", "SI (m2)", "CT (m3)", "SI (m3)"))
+
+# Create the plot
+ggplot(data = full_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Method)) +
+  geom_line(linewidth = 0.8) +
+  geom_point() +
+  facet_wrap(~PGS_percent) +
+  scale_linetype_manual(values = c("Gee" = "dotted", "OpenMx" = "solid")) +
+  scale_color_manual(values = c("red", "blue")) +
+  theme_minimal()
+
+
+filter(full_mzdz_data, Sample == "MZ & DZ", Method == "OpenMx") %>%
+  ggplot(data = ., mapping = aes(x = Confounder, y = Power, color = Variable)) +
+    geom_line(linewidth = 0.8) +
+    geom_point() +
+    facet_wrap(~PGS_percent) +
+    scale_color_manual(values = c("red", "blue")) +
+    theme_minimal()
+
+ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Sample)) +
+  geom_line(linewidth = 0.8) +
+  geom_point() +
+  facet_wrap(~PGS_percent) +
+  scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
+  scale_color_manual(values = c("red", "blue")) +
+  theme_minimal()
+
