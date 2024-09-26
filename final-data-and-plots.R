@@ -296,6 +296,7 @@ cat(paste0(capture.output(write.csv(gee_appendix_table3, row.names = FALSE, quot
 cat(paste0(capture.output(write.csv(gee_appendix_table4, row.names = FALSE, quote = FALSE)), collapse = "\n"))
 
 # Plots powerpoint
+<<<<<<< Updated upstream
 # Plot 3
 ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
 ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
@@ -362,6 +363,74 @@ ggplot(data_noSI_long, aes(x = CT, y = value, color = variable, shape = variable
   scale_shape_manual(values = c(16, 17, 18, 19)) +
   theme_minimal()
 
+=======
+ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
+ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
+
+ext_power <- ext_power %>%
+  rename(`CT` = g, `SI` = b, "Cultural Transmission Only" = p1,
+         "Sibling Interaction Only" = p2, "Combined Model - Cultural Transmission" = p3, "Combined Model - Sibling Interaction" = p4)
+
+data_noCT <- ext_power[ext_power$CT == 0, ]
+
+# Gather the data for plotting
+data_noCT_long <- gather(data_noCT, key = "variable", value = "value","Cultural Transmission Only", "Sibling Interaction Only",
+                         "Combined Model - Cultural Transmission", "Combined Model - Sibling Interaction")
+data_noCT_long$variable <- factor(data_noCT_long$variable,
+                                  levels = c("Cultural Transmission Only", "Sibling Interaction Only",
+                                             "Combined Model - Cultural Transmission", "Combined Model - Sibling Interaction"))
+
+# Create the plot
+ggplot(data_noCT_long, aes(x = SI, y = value, color = variable)) +
+  geom_line(size = 1.1) +
+  geom_point(aes(shape = variable), size = 2) +
+  scale_shape_manual(values = c(16, 17, 18, 19)) +  # Assign specific shapes (circle, triangle, diamond)
+  labs(title = NULL,
+       x = "Sibling Interaction",
+       y = "Power",
+       color = "Parameter",
+       shape = "Parameter") +
+  scale_color_manual(values = c("red", "purple", "turquoise", "blue")) +
+  theme_minimal()
+
+
+# Plot 4
+# Filter the data for b = 0
+data_noSI <- ext_power[ext_power$SI == 0, ]
+
+# Gather the data for plotting
+data_noSI_long <- gather(data_noSI, key = "variable", value = "value", "Cultural Transmission Only", "Sibling Interaction Only",
+                         "Combined Model - Cultural Transmission", "Combined Model - Sibling Interaction")
+data_noSI_long$variable <- factor(data_noSI_long$variable,
+                                  levels = c("Cultural Transmission Only", "Sibling Interaction Only",
+                                             "Combined Model - Cultural Transmission", "Combined Model - Sibling Interaction"))
+
+# Create the plot
+ggplot(data_noSI_long, aes(x = CT, y = value, color = variable)) +
+  geom_line(size = 1.1) +
+  geom_point(aes(shape = variable), size = 2) +
+  scale_shape_manual(values = c(16, 17, 18, 19)) +  # Assign specific shapes (circle, triangle, diamond)
+  labs(title = NULL,
+       x = "Cultural Transmission",
+       y = "Power",
+       color = "Parameter",
+       shape = "Parameter") +
+  scale_color_manual(values = c("red", "purple", "turquoise", "blue")) +
+  theme_minimal()
+
+paper_power %>%
+  filter(PGS == 0.1) %>%
+  ggplot(aes(x = g, y = b, fill = p1)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.2f", p1),
+                color = ifelse(p1 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
+
+# Stashed changes
 
 paper_power %>%
   filter(PGS == 0.1) %>%
@@ -462,4 +531,3 @@ ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Var
   scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
   scale_color_manual(values = c("red", "blue")) +
   theme_minimal()
-
