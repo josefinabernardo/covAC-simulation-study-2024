@@ -463,3 +463,24 @@ ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Var
   scale_color_manual(values = c("red", "blue")) +
   theme_minimal()
 
+
+# Vary A
+
+devtools::install_github("josefinabernardo/gnomesims", force = TRUE)
+library(gnomesims)
+library(OpenMx)
+
+# Run function for detailed lots in running text
+varya_data <- gnomesims::gnome_mx_simulation(a = seq(.4,.8,.1), ct = seq(0,.1,.05), si = seq(0,.1,.05),
+                                             nloci = 100, npgsloci = 10)
+
+# Create seperate data sets for processing
+varya_power <- varya_data$power
+varya_estimates <- varya_data$params
+
+# Write to .csv files
+write.csv(varya_estimates, file = "varya_mx_estimates.csv", row.names = TRUE)
+write.csv(varya_power, file = "varya_mx_power.csv", row.names = TRUE)
+
+
+
