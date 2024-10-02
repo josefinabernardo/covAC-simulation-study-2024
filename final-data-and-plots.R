@@ -466,12 +466,12 @@ ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Var
 
 # Vary A
 
+library(OpenMx)
 devtools::install_github("josefinabernardo/gnomesims", force = TRUE)
 library(gnomesims)
-library(OpenMx)
 
 # Run function for detailed lots in running text
-varya_data <- gnomesims::gnome_mx_simulation(a = seq(.4,1,.2), ct = seq(0,.1,.02), si = seq(0,.1,.02),
+varya_data <- gnomesims::gnome_mx_simulation(a = sqrt(seq(.4,.8,.1)), ct = seq(0,.1,.02), si = seq(0,.1,.02),
                                              nloci = 100, npgsloci = 10)
 
 # Create seperate data sets for processing
@@ -532,4 +532,30 @@ power_varya %>%
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
   theme_minimal()
 
+
+gnome_effect(g = power_varya$g, b = power_varya$b,
+             a = sqrt(power_varya$a), c =  sqrt(power_varya$c),
+             e = sqrt(power_varya$e))
+
+# Plotting components
+comp_plot_data <- data.frame(setting = 1:4, a = sqrt(seq(.4,1,.2)), c = sqrt(.3), e = sqrt(.3))
+
+# Creating and standardizing the data
+comp_plot_data$a_stand <- comp_plot_data$a / (comp_plot_data$a + comp_plot_data$c + comp_plot_data$e)
+comp_plot_data$c_stand <- comp_plot_data$c / (comp_plot_data$a + comp_plot_data$c + comp_plot_data$e)
+comp_plot_data$e_stand <- comp_plot_data$e / (comp_plot_data$a + comp_plot_data$c + comp_plot_data$e)
+
+# Plots for parameter settings
+par(mfrow = c(1, 2))
+plot(comp_plot_data$setting, comp_plot_data$a, type = "b", pch = "a",
+     col = "blue", ylim = c(0, 1), xlab = "Setting",
+     ylab = "Unstandardized Values", xaxt = "n")
+axis(1, at = comp_plot_data$setting)
+lines(comp_plot_data$setting, comp_plot_data$c, type = "b", pch = "c", col = "red")
+plot(comp_plot_data$setting, comp_plot_data$a_stand, type = "b", pch = "a",
+     col = "blue", ylim = c(0, 1), xlab = "Setting",
+     ylab = "Standardized Values", xaxt = "n")
+lines(comp_plot_data$setting, comp_plot_data$c_stand, type = "b", pch = "c", col = "red")
+axis(1, at = comp_plot_data$setting)
+par(mfrow = c(1, 1))
 
