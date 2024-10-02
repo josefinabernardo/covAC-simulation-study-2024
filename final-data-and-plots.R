@@ -471,7 +471,7 @@ library(gnomesims)
 library(OpenMx)
 
 # Run function for detailed lots in running text
-varya_data <- gnomesims::gnome_mx_simulation(a = seq(.4,.8,.1), ct = seq(0,.1,.05), si = seq(0,.1,.05),
+varya_data <- gnomesims::gnome_mx_simulation(a = seq(.4,1,.2), ct = seq(0,.1,.02), si = seq(0,.1,.02),
                                              nloci = 100, npgsloci = 10)
 
 # Create seperate data sets for processing
@@ -482,5 +482,54 @@ varya_estimates <- varya_data$params
 write.csv(varya_estimates, file = "varya_mx_estimates.csv", row.names = TRUE)
 write.csv(varya_power, file = "varya_mx_power.csv", row.names = TRUE)
 
+power_varya <- read.csv("varya_mx_power.csv")
+
+power_varya %>%
+  ggplot(aes(x = g, y = b, fill = p1)) +
+  geom_tile() +
+  facet_wrap(~a) +
+  geom_text(aes(label = sprintf("%.2f", p1),
+                color = ifelse(p1 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
+
+power_varya %>%
+  ggplot(aes(x = g, y = b, fill = p2)) +
+  geom_tile() +
+  facet_wrap(~a) +
+  geom_text(aes(label = sprintf("%.2f", p2),
+                color = ifelse(p2 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
+
+power_varya %>%
+  ggplot(aes(x = g, y = b, fill = p3)) +
+  geom_tile() +
+  facet_wrap(~a) +
+  geom_text(aes(label = sprintf("%.2f", p3),
+                color = ifelse(p3 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
+
+power_varya %>%
+  ggplot(aes(x = g, y = b, fill = p4)) +
+  geom_tile() +
+  facet_wrap(~a) +
+  geom_text(aes(label = sprintf("%.2f", p4),
+                color = ifelse(p4 < 0.5, "white", "black")),  # Dynamic text color
+            size = 3) +
+  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+  scale_color_identity() +  # Use identity scale for text color (white/black)
+  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
+  theme_minimal()
 
 
