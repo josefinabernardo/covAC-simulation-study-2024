@@ -72,6 +72,9 @@ cairo_pdf("figure3-latex.pdf", width = 6, height = 4)
 print(plot1)
 dev.off()
 
+
+ggsave("figure3-latex", width = 6, height = 4, units = "in")
+
 # Plot 2 - MZ & DZ vs. DZ-only Power
 p5_mx_data <- paper_power %>%
   filter(g == 0) %>%
