@@ -53,13 +53,24 @@ p2_mx_data <- paper_power %>%
 mx_mzdz_data <- rbind(p1_mx_data, p2_mx_data) %>%
   mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%")))
 
-plot1 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable)) +
+plot1new <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable)) +
   geom_line(linewidth = 0.8) +
   geom_point() +
   facet_wrap(~PGS_percent) +
   jtools::theme_apa() +
   theme(text = element_text(family = "serif")) +
   scale_color_viridis_d(name = "variable")
+
+plot1 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 1.5) +
+  facet_wrap(~PGS_percent) +
+  scale_color_manual(values = c("red", "blue")) +
+  theme_minimal(base_family = "CMU Serif")
+
+cairo_pdf("figure3-latex.pdf", width = 6, height = 4)
+print(plot1)
+dev.off()
 
 # Plot 2 - MZ & DZ vs. DZ-only Power
 p5_mx_data <- paper_power %>%
@@ -104,16 +115,20 @@ data_noCT_long$variable <- factor(data_noCT_long$variable,
                                   levels = c("CT (m1)", "SI (m2)", "CT (m3)", "SI (m3)"))
 
 # Create the plot
-plot3 <- ggplot(data_noCT_long, aes(x = SI, y = value, color = variable)) +
+plot3 <- ggplot(data_noCT_long, aes(x = SI, y = value, color = variable, shape = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
        x = "Sibling Interaction",
        y = "Power",
-       color = "Parameter") +
-  jtools::theme_apa() +
-  theme(text = element_text(family = "serif")) +
-  scale_color_viridis_d(name = "variable")
+       color = "Parameter", shape = "Parameter") +
+  scale_color_manual(values = colorRampPalette(c("red", "blue"))(4)) +
+  scale_shape_manual(values = c(15, 17, 18, 19)) +
+  theme_minimal(base_family = "CMU Serif")
+
+cairo_pdf("appendix1-latex.pdf", width = 6, height = 4)
+print(plot3)
+dev.off()
 
 # Plot 4
 # Filter the data for b = 0
@@ -125,17 +140,20 @@ data_noSI_long$variable <- factor(data_noSI_long$variable,
                                   levels = c("CT (m1)", "SI (m2)", "CT (m3)", "SI (m3)"))
 
 # Create the plot
-plot4 <- ggplot(data_noSI_long, aes(x = CT, y = value, color = variable)) +
+plot4 <- ggplot(data_noSI_long, aes(x = CT, y = value, color = variable, shape = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
        x = "Cultural Transmission",
        y = "Power",
-       color = "Parameter") +
-  jtools::theme_apa() +
-  theme(text = element_text(family = "serif")) +
-  scale_color_viridis_d(name = "variable")
+       color = "Parameter", shape = "Parameter") +
+  scale_color_manual(values = colorRampPalette(c("red", "blue"))(4)) +
+  scale_shape_manual(values = c(15, 17, 18, 19)) +
+  theme_minimal(base_family = "CMU Serif")
 
+cairo_pdf("appendix2-latex.pdf", width = 6, height = 4)
+print(plot4)
+dev.off()
 
 # Plot 5
 p1_gee_data <- gee_power %>%
@@ -163,9 +181,12 @@ geom_line(linewidth = 0.8) +
 geom_point() +
 facet_wrap(~PGS_percent) +
 scale_linetype_manual(values = c("Gee" = "dotted", "OpenMx" = "solid")) +
-jtools::theme_apa() +
-theme(text = element_text(family = "serif")) +
-scale_color_viridis_d(name = "variable")
+scale_color_manual(values = c("red", "blue")) +
+theme_minimal(base_family = "CMU Serif")
+
+cairo_pdf("appendix8-latex.pdf", width = 6, height = 4)
+print(plot5)
+dev.off()
 
 
 # Set width and height in inches (1 inch = 25.4 mm)
@@ -363,64 +384,91 @@ ggplot(data_noSI_long, aes(x = CT, y = value, color = variable, shape = variable
   theme_minimal()
 
 
-paper_power %>%
+part1 <- paper_power %>%
   filter(PGS == 0.1) %>%
   ggplot(aes(x = g, y = b, fill = p1)) +
   geom_tile() +
   geom_text(aes(label = sprintf("%.2f", p1),
-                color = ifelse(p1 < 0.5, "white", "black")),  # Dynamic text color
-            size = 3) +
-  scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
+                color = ifelse(p1 > 0.5, "white", "black")),  # Dynamic text color
+            size = 3, family = "CMU Serif") +
+  scale_fill_gradient(low = "red", high = "blue", limits = c(0, 1)) +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  theme_minimal()
+  ggtitle("CT-Only") +
+  theme_minimal(base_family = "CMU Serif") +
+  theme(legend.position = "none")
 
-paper_power %>%
+part2 <- paper_power %>%
   filter(PGS == 0.1) %>%
   ggplot(aes(x = g, y = b, fill = p2)) +
   geom_tile() +
   geom_text(aes(label = sprintf("%.2f", p2),
-                color = ifelse(p2 < 0.5, "white", "black")),  # Dynamic text color
-            size = 3) +
+                color = ifelse(p2 > 0.5, "white", "black")),  # Dynamic text color
+            size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  theme_minimal()
+  ggtitle("SI-Only") +
+  theme_minimal(base_family = "CMU Serif") +
+  theme(legend.position = "none")
 
-paper_power %>%
+part3 <- paper_power %>%
   filter(PGS == 0.1) %>%
   ggplot(aes(x = g, y = b, fill = p3)) +
   geom_tile() +
   geom_text(aes(label = sprintf("%.2f", p3),
-                color = ifelse(p3 < 0.5, "white", "black")),  # Dynamic text color
-            size = 3) +
+                color = ifelse(p3 > 0.5, "white", "black")),  # Dynamic text color
+            size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  theme_minimal()
+  ggtitle("CT - Combined Model") +
+  theme_minimal(base_family = "CMU Serif") +
+  theme(legend.position = "none")
 
-paper_power %>%
+part4 <- paper_power %>%
   filter(PGS == 0.1) %>%
   ggplot(aes(x = g, y = b, fill = p4)) +
   geom_tile() +
   geom_text(aes(label = sprintf("%.2f", p4),
-                color = ifelse(p4 < 0.5, "white", "black")),  # Dynamic text color
-            size = 3) +
+                color = ifelse(p4 > 0.5, "white", "black")),  # Dynamic text color
+            size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  theme_minimal()
+  ggtitle("SI - Combined Model") +
+  theme_minimal(base_family = "CMU Serif") +
+  theme(legend.position = "none")
+
+#install.packages("cowplot")
+library(cowplot)
+
+# Combine the plots into a grid
+combined_plot <- plot_grid(part1, part2, part3, part4, ncol = 2)
+
+# Show the combined plot
+print(combined_plot)
+
+# Save the combined plot as a PDF
 
 
-# resentation Appendix
+cairo_pdf("figure2-latex.pdf", width = 6, height = 4)
+print(combined_plot)
+dev.off()
+
+# Presentation Appendix
 plot2 <- ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Sample)) +
   geom_line(linewidth = 0.8) +
-  geom_point() +
+  geom_point(size = 1.5) +
   facet_wrap(~PGS_percent) +
   scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
-  jtools::theme_apa() +
-  theme(text = element_text(family = "serif")) +
-  scale_color_viridis_d(name = "variable")
+  scale_color_manual(values = c("red", "blue")) +
+  theme_minimal(base_family = "CMU Serif")
+
+cairo_pdf("figure4-latex.pdf", width = 6, height = 4)
+print(plot2)
+dev.off()
+
 
 # Plot 3
 ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
@@ -484,53 +532,69 @@ write.csv(varya_power, file = "varya_mx_power.csv", row.names = TRUE)
 
 power_varya <- read.csv("varya_mx_power.csv")
 
-power_varya %>%
+varya1_plot <- power_varya %>%
   ggplot(aes(x = g, y = b, fill = p1)) +
   geom_tile() +
   facet_wrap(~a) +
   geom_text(aes(label = sprintf("%.2f", p1),
                 color = ifelse(p1 < 0.5, "white", "black")),  # Dynamic text color
-            size = 3) +
+            size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  theme_minimal()
+  theme_minimal(base_family = "CMU Serif")
 
-power_varya %>%
+varya2_plot <-power_varya %>%
   ggplot(aes(x = g, y = b, fill = p2)) +
   geom_tile() +
   facet_wrap(~a) +
   geom_text(aes(label = sprintf("%.2f", p2),
                 color = ifelse(p2 < 0.5, "white", "black")),  # Dynamic text color
-            size = 3) +
+            size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  theme_minimal()
+  theme_minimal(base_family = "CMU Serif")
 
-power_varya %>%
+varya3_plot <-power_varya %>%
   ggplot(aes(x = g, y = b, fill = p3)) +
   geom_tile() +
   facet_wrap(~a) +
   geom_text(aes(label = sprintf("%.2f", p3),
                 color = ifelse(p3 < 0.5, "white", "black")),  # Dynamic text color
-            size = 3) +
+            size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  theme_minimal()
+  theme_minimal(base_family = "CMU Serif")
 
-power_varya %>%
+varya4_plot <- power_varya %>%
   ggplot(aes(x = g, y = b, fill = p4)) +
   geom_tile() +
   facet_wrap(~a) +
   geom_text(aes(label = sprintf("%.2f", p4),
                 color = ifelse(p4 < 0.5, "white", "black")),  # Dynamic text color
-            size = 3) +
+            size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  theme_minimal()
+  theme_minimal(base_family = "CMU Serif")
+
+cairo_pdf("appendix4-latex.pdf", width = 6, height = 4)
+print(varya1_plot)
+dev.off()
+
+cairo_pdf("appendix5-latex.pdf", width = 6, height = 4)
+print(varya2_plot)
+dev.off()
+
+cairo_pdf("appendix6-latex.pdf", width = 6, height = 4)
+print(varya3_plot)
+dev.off()
+
+cairo_pdf("appendix7-latex.pdf", width = 6, height = 4)
+print(varya4_plot)
+dev.off()
 
 
 gnome_effect(g = power_varya$g, b = power_varya$b,
@@ -544,6 +608,47 @@ comp_plot_data <- data.frame(setting = 1:4, a = sqrt(seq(.4,1,.2)), c = sqrt(.3)
 comp_plot_data$a_stand <- comp_plot_data$a / (comp_plot_data$a + comp_plot_data$c + comp_plot_data$e)
 comp_plot_data$c_stand <- comp_plot_data$c / (comp_plot_data$a + comp_plot_data$c + comp_plot_data$e)
 comp_plot_data$e_stand <- comp_plot_data$e / (comp_plot_data$a + comp_plot_data$c + comp_plot_data$e)
+
+# Preparing data for ggplot (pivot for long format)
+comp_plot_data_long <- comp_plot_data %>%
+  pivot_longer(cols = c(a, c, a_stand, c_stand),
+               names_to = c(".value", "type"),
+               names_pattern = "(.*)(_stand)?")
+
+# Plot unstandardized
+p1 <- ggplot(comp_plot_data_long, aes(x = setting)) +
+  geom_line(aes(y = a, color = "blue")) +
+  geom_line(aes(y = c, color = "red")) +
+  # Add white circles behind the text
+  geom_point(aes(y = a), color = "white", size = 6) +  # White background for letter "a"
+  geom_point(aes(y = c), color = "white", size = 6) +  # White background for letter "c"
+  geom_text(aes(y = a, label = "a", color = "blue"), size = 4, family = "CMU Serif") +   # Use "a" as the point
+  geom_text(aes(y = c, label = "c", color = "red"), size = 4, family = "CMU Serif") +    # Use "c" as the point
+  labs(x = "Setting", y = "Unstandardized Values") +
+  scale_color_identity(guide = "none") +
+  ylim(0,1) +
+  theme_minimal(base_family = "CMU Serif")
+
+# Plot standardized
+p2 <- ggplot(comp_plot_data_long, aes(x = setting)) +
+  geom_line(aes(y = a_stand, color = "blue")) +
+  geom_line(aes(y = c_stand, color = "red")) +
+  # Add white circles behind the text
+  geom_point(aes(y = a_stand), color = "white", size = 6) +  # White background for letter "a"
+  geom_point(aes(y = c_stand), color = "white", size = 6) +  # White background for letter "c"
+  geom_text(aes(y = a_stand, label = "a", color = "blue", family = "CMU Serif"), size = 4) +   # Use "a" as the point
+  geom_text(aes(y = c_stand, label = "c", color = "red", family = "CMU Serif"), size = 4) +    # Use "c" as the point
+  labs(x = "Setting", y = "Standardized Values") +
+  scale_color_identity(guide = "none") +
+  ylim(0,1) +
+  theme_minimal(base_family = "CMU Serif")
+
+# Display the plots side by side
+library(gridExtra)
+
+cairo_pdf("appendix3-latex.pdf", width = 6, height = 2.5)
+grid.arrange(p1, p2, ncol = 2)
+dev.off()
 
 # Plots for parameter settings
 par(mfrow = c(1, 2))
@@ -559,3 +664,37 @@ lines(comp_plot_data$setting, comp_plot_data$c_stand, type = "b", pch = "c", col
 axis(1, at = comp_plot_data$setting)
 par(mfrow = c(1, 1))
 
+# Same in ggplot
+# Reshape data for plotting
+long_data <- comp_plot_data %>%
+  pivot_longer(cols = c(a, c, a_stand, c_stand),
+               names_to = c(".value", "type"),
+               names_pattern = "([a-zA-Z]+)_(.*)")
+
+# Create the ggplot with facets
+ggplot(long_data, aes(x = setting, y = value, color = type, group = type)) +
+  geom_line(aes(linetype = type), size = 1) +  # Line for a and c
+  geom_point(aes(shape = type), size = 3) +   # Points for a and c
+  facet_wrap(~type, scales = "free_y", labeller = labeller(type = c("a" = "Unstandardized Values", "c" = "Standardized Values"))) +
+  labs(x = "Setting", y = "Values") +
+  scale_color_manual(values = c("blue", "red")) +  # Colors for a and c
+  theme_minimal() +
+  theme(legend.position = "none")  # Remove legend if desired
+
+# Appendix Tables
+ext_estimates <- read.csv("2024-06-04_mx_estimates_ext.csv")
+ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
+
+table1_appendix <- ext_power %>%
+  select(g, b, p1:p4, p13:p16, Smz, Sdz) %>%
+  mutate(Smz = scales::percent(Smz,accuracy=1),
+         Sdz = scales::percent(Sdz,accuracy=1))
+
+cat(paste0(capture.output(write.csv(table1_appendix, row.names = FALSE, quote = FALSE)), collapse = "\n"))
+
+table2_appendix <- ext_estimates %>%
+  select(g, b, e1:e4, e13:e16, Smz, Sdz) %>%
+  mutate(Smz = scales::percent(Smz,accuracy=1),
+         Sdz = scales::percent(Sdz,accuracy=1))
+
+cat(paste0(capture.output(write.csv(table2_appendix, row.names = FALSE, quote = FALSE)), collapse = "\n"))

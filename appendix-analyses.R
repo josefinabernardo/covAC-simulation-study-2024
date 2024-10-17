@@ -17,8 +17,11 @@ write.csv(dezeeuw_power, file = "dezeeuw_power.csv", row.names = TRUE)
 
 dezeeuw_power <- read.csv("dezeeuw_power.csv")
 
-dezeeuw_power %>%
+dezeeuw_table <- dezeeuw_power %>%
   filter(g == b) %>%
+  mutate(Smz = scales::percent(Smz),
+         Sdz = scales::percent(Sdz)) %>%
   select(g, b, p1, p2, p3, p4, Smz, Sdz)
 
+cat(paste0(capture.output(write.csv(dezeeuw_table, row.names = FALSE, quote = FALSE)), collapse = "\n"))
 
