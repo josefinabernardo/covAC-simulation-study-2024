@@ -19,7 +19,7 @@ part1 <- paper_power %>%
   scale_fill_gradient(low = "red", high = "blue", limits = c(0, 1)) +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("CT-Only") +
+  ggtitle("Cultural Transmission-Only") +
   theme_minimal(base_family = "CMU Serif") +
   theme(legend.position = "none")
 
@@ -33,7 +33,7 @@ part2 <- paper_power %>%
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("SI-Only") +
+  ggtitle("Sibling Interaction-Only") +
   theme_minimal(base_family = "CMU Serif") +
   theme(legend.position = "none")
 
@@ -47,7 +47,7 @@ part3 <- paper_power %>%
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("CT - Combined Model") +
+  ggtitle("Cultural Transmission - Combined Model") +
   theme_minimal(base_family = "CMU Serif") +
   theme(legend.position = "none")
 
@@ -61,7 +61,7 @@ part4 <- paper_power %>%
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("SI - Combined Model") +
+  ggtitle("Sibling Interaction - Combined Model") +
   theme_minimal(base_family = "CMU Serif") +
   theme(legend.position = "none")
 
@@ -72,13 +72,13 @@ plot2 <- plot_grid(part1, part2, part3, part4, ncol = 2)
 p1_mx_data <- paper_power %>%
   filter(g == 0) %>%
   dplyr::select("b", "p1", "PGS") %>%
-  mutate(Variable = "CT", Sample = "MZ & DZ") %>%
+  mutate(Variable = "Cultural Transmission", Sample = "MZ & DZ") %>%
   rename(Confounder = b, Power = p1)
 
 p2_mx_data <- paper_power %>%
   filter(b == 0) %>%
   dplyr::select("g", "p2", 'PGS') %>%
-  mutate(Variable = "SI", Sample = "MZ & DZ") %>%
+  mutate(Variable = "Sibling Interaction", Sample = "MZ & DZ") %>%
   rename(Confounder = g, Power = p2)
 
 mx_mzdz_data <- rbind(p1_mx_data, p2_mx_data) %>%
@@ -95,13 +95,13 @@ plot3 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, co
 p5_mx_data <- paper_power %>%
   filter(g == 0) %>%
   dplyr::select("b", "p5", "PGS") %>%
-  mutate(Variable = "CT", Sample = "DZ") %>%
+  mutate(Variable = "Cultural Transmission", Sample = "DZ") %>%
   rename(Confounder = b, Power = p5)
 
 p6_mx_data <- paper_power %>%
   filter(b == 0) %>%
   dplyr::select("g", "p6", 'PGS') %>%
-  mutate(Variable = "SI", Sample = "DZ") %>%
+  mutate(Variable = "Sibling Interaction", Sample = "DZ") %>%
   rename(Confounder = g, Power = p6)
 
 mx_dz_data <- rbind(p5_mx_data, p6_mx_data) %>%
@@ -131,7 +131,7 @@ appendix1 <- ggplot(data_noCT_long, aes(x = SI, y = value, color = variable, sha
   theme_minimal(base_family = "CMU Serif")
 
 # Plot 2
-appendix2 <- ggplot(data_noSI_long, aes(x = CT, y = value, color = variable, shape = variable)) +
+appendix2 <- ggplot(data_noSI_long, aes(x = "Cultural Transmission", y = value, color = variable, shape = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
@@ -239,7 +239,7 @@ appendix7 <- power_varya %>%
 p1_gee_data <- gee_power %>%
   filter(g == 0) %>%
   dplyr::select("b", "p1", "PGS") %>%
-  mutate(Variable = "CT", Sample = "MZ & DZ") %>%
+  mutate(Variable = "Cultural Transmission", Sample = "MZ & DZ") %>%
   rename(Confounder = b, Power = p1)
 
 p2_gee_data <- gee_power %>%
