@@ -2,6 +2,8 @@
 library(tidyverse)
 library(cowplot)
 library(gridExtra)
+library(extrafont)
+library(Cairo)
 
 # Load in data sets
 paper_power <- read.csv("paper_mx_power.csv")
@@ -21,7 +23,7 @@ part1 <- paper_power %>%
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
   ggtitle("Cultural Transmission-Only") +
   theme_minimal(base_family = "CMU Serif") +
-  theme(legend.position = "none")
+  theme(legend.position = "none", plot.title = element_text(size = 12))
 
 part2 <- paper_power %>%
   filter(PGS == 0.1) %>%
@@ -35,7 +37,7 @@ part2 <- paper_power %>%
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
   ggtitle("Sibling Interaction-Only") +
   theme_minimal(base_family = "CMU Serif") +
-  theme(legend.position = "none")
+  theme(legend.position = "none", plot.title = element_text(size = 12))
 
 part3 <- paper_power %>%
   filter(PGS == 0.1) %>%
@@ -47,9 +49,9 @@ part3 <- paper_power %>%
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("Cultural Transmission - Combined Model") +
+  ggtitle("Cultural Transmission -\nCombined Model") +
   theme_minimal(base_family = "CMU Serif") +
-  theme(legend.position = "none")
+  theme(legend.position = "none", plot.title = element_text(size = 12))
 
 part4 <- paper_power %>%
   filter(PGS == 0.1) %>%
@@ -61,9 +63,9 @@ part4 <- paper_power %>%
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
   labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("Sibling Interaction - Combined Model") +
+  ggtitle("Sibling Interaction -\nCombined Model") +
   theme_minimal(base_family = "CMU Serif") +
-  theme(legend.position = "none")
+  theme(legend.position = "none", plot.title = element_text(size = 12))
 
 # Combine the plots into a grid
 plot2 <- plot_grid(part1, part2, part3, part4, ncol = 2)
@@ -89,6 +91,7 @@ plot3 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, co
   geom_point(size = 1.5) +
   facet_wrap(~PGS_percent) +
   scale_color_manual(values = c("red", "blue")) +
+  labs(color = "Modeled Source of\nAC Covariance") +
   theme_minimal(base_family = "CMU Serif")
 
 # Plot 4 - Type I Error Rate for Four Different Strengths of PGS Predictive Power in the MZ & DZ vs. DZ-only Sample
@@ -115,9 +118,24 @@ plot4 <- ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, co
   facet_wrap(~PGS_percent) +
   scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
   scale_color_manual(values = c("red", "blue")) +
+  labs(color = "Modeled Source of\nAC Covariance") +
   theme_minimal(base_family = "CMU Serif")
 
 # APPENDIX
+ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
+
+ext_power <- ext_power %>%
+  rename(`CT` = g, `SI` = b, `CT (m1)` = p1,
+         `SI (m2)` = p2, `CT (m3)` = p3, `SI (m3)` = p4)
+
+data_noCT <- ext_power[ext_power$CT == 0, ]
+
+# Gather the data for plotting
+data_noCT_long <- gather(data_noCT, key = "variable", value = "value",`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
+data_noCT_long$variable <- factor(data_noCT_long$variable,
+                                  levels = c("CT (m1)", "SI (m2)", "CT (m3)", "SI (m3)"))
+
+
 # Plot 1
 appendix1 <- ggplot(data_noCT_long, aes(x = SI, y = value, color = variable, shape = variable)) +
   geom_line() +
@@ -125,19 +143,26 @@ appendix1 <- ggplot(data_noCT_long, aes(x = SI, y = value, color = variable, sha
   labs(title = NULL,
        x = "Sibling Interaction",
        y = "Power",
-       color = "Parameter", shape = "Parameter") +
+       color = "Modeled Source of\nAC Covariance", shape = "Modeled Source of\nAC Covariance") +
   scale_color_manual(values = colorRampPalette(c("red", "blue"))(4)) +
   scale_shape_manual(values = c(15, 17, 18, 19)) +
   theme_minimal(base_family = "CMU Serif")
 
 # Plot 2
-appendix2 <- ggplot(data_noSI_long, aes(x = "Cultural Transmission", y = value, color = variable, shape = variable)) +
+data_noSI <- ext_power[ext_power$SI== 0, ]
+
+# Gather the data for plotting
+data_noSI_long <- gather(data_noSI, key = "variable", value = "value", `CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
+data_noSI_long$variable <- factor(data_noSI_long$variable,
+                                  levels = c("CT (m1)", "SI (m2)", "CT (m3)", "SI (m3)"))
+
+appendix2 <- ggplot(data_noSI_long, aes(x = CT, y = value, color = variable, shape = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
        x = "Cultural Transmission",
        y = "Power",
-       color = "Parameter", shape = "Parameter") +
+       color = "Modeled Source of\nAC Covariance", shape = "Modeled Source of\nAC Covariance") +
   scale_color_manual(values = colorRampPalette(c("red", "blue"))(4)) +
   scale_shape_manual(values = c(15, 17, 18, 19)) +
   theme_minimal(base_family = "CMU Serif")
@@ -181,9 +206,11 @@ app_part2 <- ggplot(comp_plot_data_long, aes(x = setting)) +
   ylim(0,1) +
   theme_minimal(base_family = "CMU Serif")
 
-grid.arrange(app_part1, app_part2, ncol = 2)
+appendix3 <- plot_grid(app_part1, app_part2, ncol = 2)
 
 # Plot 4
+power_varya <- read.csv("varya_mx_power.csv")
+
 appendix4 <- power_varya %>%
   ggplot(aes(x = g, y = b, fill = p1)) +
   geom_tile() +
@@ -197,7 +224,7 @@ appendix4 <- power_varya %>%
   theme_minimal(base_family = "CMU Serif")
 
 # Plot 5
-appendix5 <-power_varya %>%
+appendix5 <- power_varya %>%
   ggplot(aes(x = g, y = b, fill = p2)) +
   geom_tile() +
   facet_wrap(~a) +
@@ -210,7 +237,7 @@ appendix5 <-power_varya %>%
   theme_minimal(base_family = "CMU Serif")
 
 # Plot 6
-appendix6 <-power_varya %>%
+appendix6 <- power_varya %>%
   ggplot(aes(x = g, y = b, fill = p3)) +
   geom_tile() +
   facet_wrap(~a) +
@@ -236,6 +263,8 @@ appendix7 <- power_varya %>%
   theme_minimal(base_family = "CMU Serif")
 
 # Plot 8
+gee_power <- read.csv("paper_gee_power.csv")
+
 p1_gee_data <- gee_power %>%
   filter(g == 0) %>%
   dplyr::select("b", "p1", "PGS") %>%
@@ -245,7 +274,7 @@ p1_gee_data <- gee_power %>%
 p2_gee_data <- gee_power %>%
   filter(b == 0) %>%
   dplyr::select("g", "p2", 'PGS') %>%
-  mutate(Variable = "SI", Sample = "MZ & DZ") %>%
+  mutate(Variable = "Sibling Interaction", Sample = "MZ & DZ") %>%
   rename(Confounder = g, Power = p2)
 
 gee_mzdz_data <- rbind(p1_gee_data, p2_gee_data) %>%
@@ -262,4 +291,123 @@ appendix8 <- ggplot(data = full_mzdz_data, mapping = aes(x = Confounder, y = Pow
   facet_wrap(~PGS_percent) +
   scale_linetype_manual(values = c("Gee" = "dotted", "OpenMx" = "solid")) +
   scale_color_manual(values = c("red", "blue")) +
+  labs(color = "Modeled Source of\nAC Covariance") +
   theme_minimal(base_family = "CMU Serif")
+
+# Print all plots
+print(plot2) # 4-in-1 Power
+print(plot3) # Faceted PGS
+print(plot4) # Faceted PGS
+
+print(appendix1) # Line graph
+print(appendix2) # Line graph
+print(appendix3) # Variance components
+print(appendix4) # 4-in-1 Power
+print(appendix5)
+print(appendix6)
+print(appendix7)
+print(appendix8) #
+
+# Save all plots as .jpgs
+jpeg("plot2-submission.jpg", width = 6, height = 4, units = "in", res = 300)
+print(plot2)
+dev.off()
+
+jpeg("plot3-submission.jpg", width = 7, height = 5, units = "in", res = 300)
+print(plot3)
+dev.off()
+
+jpeg("plot4-submission.jpg", width = 7, height = 5, units = "in", res = 300)
+print(plot4)
+dev.off()
+
+jpeg("appendix1-submission.jpg", width = 6, height = 4, units = "in", res = 300)
+print(appendix1)
+dev.off()
+
+jpeg("appendix2-submission.jpg", width = 6, height = 4, units = "in", res = 300)
+print(appendix2)
+dev.off()
+
+jpeg("appendix3-submission.jpg", width = 6, height = 3, units = "in", res = 300)
+print(appendix3)
+dev.off()
+
+jpeg("appendix4-submission.jpg", width = 6, height = 4, units = "in", res = 300)
+print(appendix4)
+dev.off()
+
+jpeg("appendix5-submission.jpg", width = 6, height = 4, units = "in", res = 300)
+print(appendix5)
+dev.off()
+
+jpeg("appendix6-submission.jpg", width = 6, height = 4, units = "in", res = 300)
+print(appendix6)
+dev.off()
+
+jpeg("appendix7-submission.jpg", width = 6, height = 4, units = "in", res = 300)
+print(appendix7)
+dev.off()
+
+jpeg("appendix8-submission.jpg", width = 7, height = 5, units = "in", res = 300)
+print(appendix8)
+dev.off()
+
+# Save all plots as .eps
+# Save plot2 as .eps
+CairoPS("plot2-submission.eps", width = 6, height = 4)
+print(plot2)
+dev.off()
+
+# Save plot3 as .eps
+CairoPS("plot3-submission.eps", width = 7, height = 5)
+print(plot3)
+dev.off()
+
+# Save plot4 as .eps
+CairoPS("plot4-submission.eps", width = 7, height = 5)
+print(plot4)
+dev.off()
+
+# Save appendix1 as .eps
+CairoPS("appendix1-submission.eps", width = 6, height = 4)
+print(appendix1)
+dev.off()
+
+# Save appendix2 as .eps
+CairoPS("appendix2-submission.eps", width = 6, height = 4)
+print(appendix2)
+dev.off()
+
+# Save appendix3 as .eps
+CairoPS("appendix3-submission.eps", width = 6, height = 3)
+print(appendix3)
+dev.off()
+
+# Save appendix4 as .eps
+CairoPS("appendix4-submission.eps", width = 6, height = 4)
+print(appendix4)
+dev.off()
+
+# Save appendix5 as .eps
+CairoPS("appendix5-submission.eps", width = 6, height = 4)
+print(appendix5)
+dev.off()
+
+# Save appendix6 as .eps
+CairoPS("appendix6-submission.eps", width = 6, height = 4)
+print(appendix6)
+dev.off()
+
+# Save appendix7 as .eps
+CairoPS("appendix7-submission.eps", width = 6, height = 4)
+print(appendix7)
+dev.off()
+
+# Save appendix8 as .eps
+CairoPS("appendix8-submission.eps", width = 7, height = 5)
+print(appendix8)
+dev.off()
+
+
+
