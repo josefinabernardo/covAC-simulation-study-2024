@@ -355,57 +355,57 @@ dev.off()
 
 # Save all plots as .eps
 # Save plot2 as .eps
-CairoPS("plot2-submission.eps", width = 6, height = 4)
+postscript("Figure2.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(plot2)
 dev.off()
 
 # Save plot3 as .eps
-CairoPS("plot3-submission.eps", width = 7, height = 5)
+postscript("Figure3.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(plot3)
 dev.off()
 
 # Save plot4 as .eps
-CairoPS("plot4-submission.eps", width = 7, height = 5)
+postscript("Figure4.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(plot4)
 dev.off()
 
 # Save appendix1 as .eps
-CairoPS("appendix1-submission.eps", width = 6, height = 4)
+postscript("Figure5.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(appendix1)
 dev.off()
 
 # Save appendix2 as .eps
-CairoPS("appendix2-submission.eps", width = 6, height = 4)
+postscript("Figure6.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(appendix2)
 dev.off()
 
 # Save appendix3 as .eps
-CairoPS("appendix3-submission.eps", width = 6, height = 3)
+postscript("Figure7.eps", width = 6, height = 3, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(appendix3)
 dev.off()
 
 # Save appendix4 as .eps
-CairoPS("appendix4-submission.eps", width = 6, height = 4)
+postscript("Figure8.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(appendix4)
 dev.off()
 
 # Save appendix5 as .eps
-CairoPS("appendix5-submission.eps", width = 6, height = 4)
+postscript("Figure9.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(appendix5)
 dev.off()
 
 # Save appendix6 as .eps
-CairoPS("appendix6-submission.eps", width = 6, height = 4)
+postscript("Figure10.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(appendix6)
 dev.off()
 
 # Save appendix7 as .eps
-CairoPS("appendix7-submission.eps", width = 6, height = 4)
+postscript("Figure11.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(appendix7)
 dev.off()
 
 # Save appendix8 as .eps
-CairoPS("appendix8-submission.eps", width = 7, height = 5)
+postscript("Figure6.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE)
 print(appendix8)
 dev.off()
 
