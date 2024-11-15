@@ -308,16 +308,17 @@ print(appendix6)
 print(appendix7)
 print(appendix8) #
 
+
 # Save all plots as .jpgs
-jpeg("plot2-submission.jpg", width = 6, height = 4, units = "in", res = 300)
+jpeg("Figure2.jpg", width = 6, height = 4, units = "in", res = 600)
 print(plot2)
 dev.off()
 
-jpeg("plot3-submission.jpg", width = 7, height = 5, units = "in", res = 300)
+jpeg("Figure3.jpg", width = 7, height = 5, units = "in", res = 600)
 print(plot3)
 dev.off()
 
-jpeg("plot4-submission.jpg", width = 7, height = 5, units = "in", res = 300)
+jpeg("Figure4.jpg", width = 7, height = 5, units = "in", res = 300)
 print(plot4)
 dev.off()
 
@@ -354,58 +355,65 @@ print(appendix8)
 dev.off()
 
 # Save all plots as .eps
+
+# Packages
+#install.packages("extrafont")
+library(extrafont)
+font_import(prompt = FALSE)
+loadfonts(device = "postscript")
+
 # Save plot2 as .eps
-postscript("Figure2.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure2.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(plot2)
 dev.off()
 
 # Save plot3 as .eps
-postscript("Figure3.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure3.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(plot3)
 dev.off()
 
 # Save plot4 as .eps
-postscript("Figure4.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure4.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(plot4)
 dev.off()
 
 # Save appendix1 as .eps
-postscript("Figure5.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure5.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(appendix1)
 dev.off()
 
 # Save appendix2 as .eps
-postscript("Figure6.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure6.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(appendix2)
 dev.off()
 
 # Save appendix3 as .eps
-postscript("Figure7.eps", width = 6, height = 3, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure7.eps", width = 6, height = 3, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(appendix3)
 dev.off()
 
 # Save appendix4 as .eps
-postscript("Figure8.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure8.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(appendix4)
 dev.off()
 
 # Save appendix5 as .eps
-postscript("Figure9.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure9.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(appendix5)
 dev.off()
 
 # Save appendix6 as .eps
-postscript("Figure10.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure10.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(appendix6)
 dev.off()
 
 # Save appendix7 as .eps
-postscript("Figure11.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure11.eps", width = 6, height = 4, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(appendix7)
 dev.off()
 
 # Save appendix8 as .eps
-postscript("Figure6.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE)
+postscript("Figure6.eps", width = 7, height = 5, onefile = FALSE, paper = "special", horizontal = FALSE, family = "CMU Serif")
 print(appendix8)
 dev.off()
 
