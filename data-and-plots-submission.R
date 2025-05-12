@@ -1,8 +1,8 @@
 # Install all packages
-# detach("package:gnomesims", unload = TRUE)
+
 devtools::install_github("josefinabernardo/gnomesims", force = TRUE)
 library(gnomesims)
-library(OpenMx)
+# library(OpenMx)
 
 # Run function for detailed lots in running text
 # paper_data <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.02), si = seq(0,.1,.02),
@@ -26,6 +26,33 @@ library(OpenMx)
 
 # write.csv(gee_estimates, file = "paper_gee_estimates.csv", row.names = TRUE)
 # write.csv(gee_power, file = "paper_gee_power.csv", row.names = TRUE)
+
+# Revision - Create data for different sample sizes
+# Define sample sizes
+sample_sizes <- c(100, seq(10000, 50000, 10000))
+sample_sizes_dz <- sample_sizes/2
+unique_sample_sizes <- unique(c(sample_sizes, sample_sizes_dz))
+
+# Generate sample data using lapply
+# sample_list <- lapply(unique_sample_sizes, function(n) {
+# gnomesims::gnome_mx_simulation(nmz = n, ndz = n, ct = 0.05, si = 0.05, nloci = 100, npgsloci = 15)
+# })
+
+sample_list <- list()
+for (n in unique_sample_sizes) {
+   if (length(sample_list) < which(unique_sample_sizes == n)) {
+     result <- gnome_mx_simulation(nmz = n, ndz = n, ct = 0.03, si = 0.03, nloci = 100, npgsloci = 10)
+     sample_list <- append(sample_list, list(result))
+   }
+ }
+
+# Extract power and parameters
+sample_power <- do.call(rbind, lapply(sample_list, `[[`, "power"))
+sample_params <- do.call(rbind, lapply(sample_list, `[[`, "params"))
+
+write.csv(sample_power, "sample_power.csv", row.names = TRUE)
+write.csv(sample_params, "sample_params.csv", row.names = TRUE)
+
 
 # Start here if files are already created
 paper_power <- read.csv("paper_mx_power.csv")

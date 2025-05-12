@@ -205,11 +205,11 @@ ggplot(data_noSI_long, aes(x = CT, y = value, color = variable)) +
 
 # Filter the data for g = 0
 data_g0 <- ext_power[ext_power$g == 0, ]
-data_g0_long <- gather(data_g0, key = "variable", value = "value", p1, p2, p3, p4)
+data_g0_long <- gather(data_g0, key = "variable", value = "value", ,`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
 data_g0_long$x_value <- data_g0_long$b
 
 # Filter the data for b = 0
 data_b0 <- ext_power[ext_power$b == 0, ]
-data_b0_long <- gather(data_b0, key = "variable", value = "value", p1, p2, p3, p4)
+data_b0_long <- gather(data_b0, key = "variable", value = "value", ,`CT (m1)`, `SI (m2)`, `CT (m3)`, `SI (m3)`)
 data_b0_long$x_value <- data_b0_long$g
 

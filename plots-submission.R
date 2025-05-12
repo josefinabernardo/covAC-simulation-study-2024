@@ -9,6 +9,10 @@ library(Cairo)
 paper_power <- read.csv("paper_mx_power.csv")
 paper_estimates <- read.csv("paper_mx_estimates.csv")
 
+sample_power <- read.csv("sample_power.csv")
+sample_params <- read.csv("sample_params.csv")
+
+
 # RUNNING TEXT
 # Plot 2 - Statistical Power Relative to effect sizes for cultural transmission and sibling interaction
 part1 <- paper_power %>%
@@ -20,10 +24,13 @@ part1 <- paper_power %>%
             size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue", limits = c(0, 1)) +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
-  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("Cultural Transmission-Only") +
+  labs(x = NULL, y = NULL, fill = "Power") +
+  ggtitle("Power Cultural Transmission\n(Using Parent PGS-Only)") +
   theme_minimal(base_family = "CMU Serif") +
-  theme(legend.position = "none", plot.title = element_text(size = 12))
+  theme(legend.position = "none", plot.title = element_text(size = 12, hjust = 0.5),
+        axis.ticks = element_blank(), panel.grid = element_blank(),
+        axis.text.x = element_text(margin = margin(t = -5)),
+        axis.text.y = element_text(margin = margin(r = -5)))
 
 part2 <- paper_power %>%
   filter(PGS == 0.1) %>%
@@ -34,10 +41,13 @@ part2 <- paper_power %>%
             size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
-  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("Sibling Interaction-Only") +
+  labs(x = NULL, y = NULL, fill = "Power") +
+  ggtitle("Power Sibling Interaction\n(Using Sibling PGS-Only)") +
   theme_minimal(base_family = "CMU Serif") +
-  theme(legend.position = "none", plot.title = element_text(size = 12))
+  theme(legend.position = "none", plot.title = element_text(size = 12, hjust = 0.5),
+        axis.ticks = element_blank(), panel.grid = element_blank(),
+        axis.text.x = element_text(margin = margin(t = -5)),
+        axis.text.y = element_text(margin = margin(r = -5)))
 
 part3 <- paper_power %>%
   filter(PGS == 0.1) %>%
@@ -48,10 +58,13 @@ part3 <- paper_power %>%
             size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
-  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("Cultural Transmission -\nCombined Model") +
+  labs(x = NULL, y = NULL, fill = "Power") +
+  ggtitle("Power Cultural Transmission\n(Using Sibling & Parent PGS)") +
   theme_minimal(base_family = "CMU Serif") +
-  theme(legend.position = "none", plot.title = element_text(size = 12))
+  theme(legend.position = "none", plot.title = element_text(size = 12, hjust = 0.5),
+        axis.ticks = element_blank(), panel.grid = element_blank(),
+        axis.text.x = element_text(margin = margin(t = -5)),
+        axis.text.y = element_text(margin = margin(r = -5)))
 
 part4 <- paper_power %>%
   filter(PGS == 0.1) %>%
@@ -62,13 +75,38 @@ part4 <- paper_power %>%
             size = 3, family = "CMU Serif") +
   scale_fill_gradient(low = "red", high = "blue") +  # Two-colored gradient
   scale_color_identity() +  # Use identity scale for text color (white/black)
-  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power") +
-  ggtitle("Sibling Interaction -\nCombined Model") +
+  labs(x = NULL, y = NULL, fill = "Power") +
+  ggtitle("Power Sibling Interaction\n(Using Sibling & Parent PGS)") +
   theme_minimal(base_family = "CMU Serif") +
-  theme(legend.position = "none", plot.title = element_text(size = 12))
+  theme(legend.position = "none", plot.title = element_text(size = 12, hjust = 0.5),
+        axis.ticks = element_blank(), panel.grid = element_blank(),
+        axis.text.x = element_text(margin = margin(t = -5)),
+        axis.text.y = element_text(margin = margin(r = -5)))
 
 # Combine the plots into a grid
-plot2 <- plot_grid(part1, part2, part3, part4, ncol = 2)
+plot2_int_1 <- plot_grid(part1, part2, ncol = 2, align = "hv")
+plot2_int_2 <- plot_grid(part3, part4, ncol = 2, align = "hv")
+plot2_int <- plot_grid(part1, part2, part3, part4, ncol = 2, align = "hv")
+
+plot2_1 <- ggdraw() +
+  draw_plot(plot2_int_1, x = 0.05, y = 0.05, width = 0.95, height = 0.95) +
+  draw_label("Cultural Transmission", x = 0.5, y = 0, vjust = -0.5, fontfamily = "CMU Serif") +
+  draw_label("Sibling Interaction", x = 0, y = 0.5, angle = 90, vjust = 1.5, fontfamily = "CMU Serif")
+plot2_1
+
+plot2_2 <- ggdraw() +
+  draw_plot(plot2_int_2, x = 0.05, y = 0.05, width = 0.95, height = 0.95) +
+  draw_label("Cultural Transmission", x = 0.5, y = 0, vjust = -0.5, fontfamily = "CMU Serif") +
+  draw_label("Sibling Interaction", x = 0, y = 0.5, angle = 90, vjust = 1.5, fontfamily = "CMU Serif")
+plot2_2
+
+plot2 <- ggdraw() +
+  draw_plot(plot2_int, x = 0.05, y = 0.05, width = 0.95, height = 0.95) +
+  draw_label("Cultural Transmission (CT)", x = 0.5, y = 0, vjust = -0.5, fontfamily = "CMU Serif") +
+  draw_label("Sibling Interaction (SI)", x = 0, y = 0.5, angle = 90, vjust = 1.5, fontfamily = "CMU Serif")
+plot2
+
+#  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power")
 
 # Plot 3 - Type I Error Rate for Four Different Strengths of PGS Predictive Power in the MZ & DZ Sample
 p1_mx_data <- paper_power %>%
@@ -120,6 +158,52 @@ plot4 <- ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, co
   scale_color_manual(values = c("red", "blue")) +
   labs(color = "Modeled Source of\nAC Covariance") +
   theme_minimal(base_family = "CMU Serif")
+
+# Prepare sample data
+sample_data <- sample_power %>%
+  select(nmz, ndz, p3, p4, p7, p8) %>%
+  mutate(N = nmz + ndz) %>%
+  rename(c("Sample Size" = "N", "Cultural Transmission MZ & DZ" = "p3",
+           "Sibling Interaction MZ & DZ" = "p4",
+           "Cultural Transmission DZ" = "p7",
+           "Sibling Interaction DZ" = "p8"))
+
+sample_data_long <- sample_data %>%
+  mutate(Sample_Size_Original = `Sample Size`) %>%
+  pivot_longer(cols = c("Cultural Transmission MZ & DZ",
+                        "Sibling Interaction MZ & DZ",
+                        "Cultural Transmission DZ",
+                        "Sibling Interaction DZ"),
+               names_to = "variable", values_to = "value") %>%
+  mutate(`Sample Size` = ifelse(str_detect(variable, "DZ$") & !str_detect(variable, "MZ & DZ"),
+                                Sample_Size_Original / 2,
+                                Sample_Size_Original)) %>%
+  select(-Sample_Size_Original)
+
+common_sample_sizes <- sample_data_long %>%
+  group_by(`Sample Size`) %>%
+  summarise(has_MZ_DZ = any(str_detect(variable, "MZ & DZ")),
+            has_DZ = any(str_detect(variable, "DZ$") & !str_detect(variable, "MZ & DZ"))) %>%
+  filter(has_MZ_DZ & has_DZ) %>%
+  pull(`Sample Size`)
+
+sample_data_long <- sample_data_long %>%
+  filter(`Sample Size` %in% common_sample_sizes) %>%
+  filter(`Sample Size` %in% c(100, 10000, 20000, 30000, 40000, 50000))
+
+plot6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
+                             color = variable, shape = variable)) +
+  geom_line() +
+  geom_point() +
+  labs(title = NULL,
+       x = "Sample Size",
+       y = "Power",
+       color = "Modeled Source of\nAC Covariance",
+       shape = "Modeled Source of\nAC Covariance") +
+  scale_color_manual(values = colorRampPalette(c("red", "blue"))(4)) +
+  scale_shape_manual(values = c(15, 17, 18, 19)) +
+  theme_minimal(base_family = "CMU Serif")
+
 
 # APPENDIX
 ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
@@ -314,12 +398,24 @@ jpeg("Figure2.jpg", width = 6, height = 4, units = "in", res = 600)
 print(plot2)
 dev.off()
 
+jpeg("Figure2_1.jpg", width = 6, height = 2.5, units = "in", res = 600)
+print(plot2_1)
+dev.off()
+
+jpeg("Figure2_2.jpg", width = 6, height = 2.5, units = "in", res = 600)
+print(plot2_2)
+dev.off()
+
 jpeg("Figure3.jpg", width = 7, height = 5, units = "in", res = 600)
 print(plot3)
 dev.off()
 
 jpeg("Figure4.jpg", width = 7, height = 5, units = "in", res = 300)
 print(plot4)
+dev.off()
+
+jpeg("Figure6.jpg", width = 6, height = 3, units = "in", res = 300)
+print(plot6)
 dev.off()
 
 jpeg("appendix1-submission.jpg", width = 6, height = 4, units = "in", res = 300)
