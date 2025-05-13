@@ -31,6 +31,7 @@ library(gnomesims)
 # Define sample sizes
 sample_sizes <- c(100, seq(10000, 50000, 10000))
 sample_sizes_dz <- sample_sizes/2
+
 unique_sample_sizes <- unique(c(sample_sizes, sample_sizes_dz))
 
 # Generate sample data using lapply
