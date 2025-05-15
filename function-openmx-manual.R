@@ -25,8 +25,8 @@ gnome_mx_simulation <- function(
 ){
   gc()
   # Set option OpenMx
-  mxOption(model = NULL, key = "Default optimizer", "NPSOL")
-  # mxOption(model = NULL, key = "Default optimizer", "CSOLNP")
+  # mxOption(model = NULL, key = "Default optimizer", "NPSOL")
+  mxOption(model = NULL, key = "Default optimizer", "CSOLNP")
   # mxOption(model = NULL, key = "Default optimizer", "SLSQP")
   mxOption(NULL, "Number of Threads", parallel::detectCores())
 
@@ -637,4 +637,26 @@ gnome_mx_simulation <- function(
            Sdz = gnome_effect(a = a, c = c, e = e, g = g, b = b)$dz)
 
   return(list(power = final_mx_power, params = final_mx_estimates))
+}
+
+gnome_power <- function(alpha = .05, df, ncp) {
+  critical_chi2 <- qchisq(alpha, df, lower.tail = F)
+  if (abs(ncp) < .0001) { ncp = 0 }
+  power <- pchisq(critical_chi2, df, ncp, lower.tail = F)
+  power
+}
+
+gnome_effect <- function(a, c, e, g, b, varA = 1, varC = 1, varE = 1) {
+
+  # Phenotypic covariances for MZ and DZ
+  smz = 2 * (g + a/2 + b/2)**2*varA + (a*varA/2 + b*varA/2) * a + (a*varA/2 + b*varA/2) * b + c**2*varC + e**2
+  sdz = 2 * (g + a/2 + b/2)**2*varA + a**2*varA/2 + b**2*varA/2 + c**2*varC + e**2*varE
+
+  # Variance Increase
+  varPh_noAC <- a**2*varA + c**2*varC + e**2*varE
+  effect_mz <- (smz - varPh_noAC) / varPh_noAC
+  effect_dz <- (sdz - varPh_noAC) / varPh_noAC
+
+  effect = list(mz = effect_mz, dz = effect_dz)
+  return(effect)
 }

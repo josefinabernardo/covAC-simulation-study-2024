@@ -1,8 +1,10 @@
 # Install all packages
 
-devtools::install_github("josefinabernardo/gnomesims", force = TRUE)
+install.packages("~/GitHub/gnomesims_0.0.0.9000.tar.gz", repos = NULL, type = "source")
+# devtools::install_github("josefinabernardo/gnomesims", force = TRUE)
 library(gnomesims)
-# library(OpenMx)
+library(OpenMx)
+library(tidyverse)
 
 # Run function for detailed lots in running text
 # paper_data <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.02), si = seq(0,.1,.02),
