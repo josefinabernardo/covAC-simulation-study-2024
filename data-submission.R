@@ -26,7 +26,7 @@ paper_estimates <- read.csv("paper_mx_estimates.csv")
 
 gee_power <- read.csv("paper_gee_power.csv")
 
-# Run function for detailed lots in running text
+# Run function for detailed plots in running text
 # varya_data <- gnomesims::gnome_mx_simulation(a = sqrt(seq(.4,.8,.1)), ct = seq(0,.1,.02), si = seq(0,.1,.02), nloci = 100, npgsloci = 10)
 
 # Create seperate data sets for processing
