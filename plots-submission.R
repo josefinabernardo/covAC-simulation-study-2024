@@ -124,13 +124,34 @@ p2_mx_data <- paper_power %>%
 mx_mzdz_data <- rbind(p1_mx_data, p2_mx_data) %>%
   mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%")))
 
+axis_lines_mzdz <- mx_mzdz_data %>%
+  group_by(PGS_percent) %>%
+  summarise(x_start = 0, x_end = max(Confounder, na.rm = TRUE),
+            y_start = 0, y_end = 0.7) %>%
+  ungroup()
+
 plot3 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable)) +
   geom_line(linewidth = 0.8) +
   geom_point(size = 1.5) +
   facet_wrap(~PGS_percent) +
+  geom_segment(data = axis_lines_mzdz,
+               aes(x = x_start, xend = x_end, y = 0, yend = 0),
+               arrow = arrow(length = unit(0.3, "cm"), type = "closed", angle = 10),
+               color = "gray50", linewidth = 0.5) +
+  geom_segment(data = axis_lines_mzdz,
+               aes(x = 0, xend = 0, y = y_start, yend = y_end),
+               arrow = arrow(length = unit(0.3, "cm"), type = "closed", angle = 10),
+               color = "gray50", linewidth = 0.5) +
   scale_color_manual(values = c("red", "blue")) +
   labs(color = "Modeled Source of\nAC Covariance") +
-  theme_minimal(base_family = "CMU Serif")
+  theme_minimal(base_family = "CMU Serif") +
+  theme(legend.text = element_text(size = 13),
+        legend.title = element_text(size = 13),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 13),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text = element_text(size = 12))
+plot3
 
 # Plot 4 - Type I Error Rate for Four Different Strengths of PGS Predictive Power in the MZ & DZ vs. DZ-only Sample
 p5_mx_data <- paper_power %>%
@@ -150,14 +171,35 @@ mx_dz_data <- rbind(p5_mx_data, p6_mx_data) %>%
 
 full_mx_data <- rbind(mx_mzdz_data, mx_dz_data)
 
-plot4 <- ggplot(data = full_mx_data, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Sample)) +
-  geom_line(linewidth = 0.8) +
-  geom_point(size = 1.5) +
+axis_lines_pgs <- full_mx_data %>%
+  group_by(PGS_percent) %>%
+  summarise(x_start = 0, x_end = max(Confounder),
+    y_start = 0, y_end = 0.75) %>%
+  ungroup()
+
+plot4 <- ggplot(data = full_mx_data) +
+  geom_line(linewidth = 0.8, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Sample)) +
+  geom_point(size = 1.5, mapping = aes(x = Confounder, y = Power, color = Variable)) +
   facet_wrap(~PGS_percent) +
+  geom_segment(data = axis_lines_pgs,
+               aes(x = x_start, xend = x_end, y = 0, yend = 0),
+               arrow = arrow(length = unit(0.3, "cm"), type = "closed", angle = 10),
+               color = "gray50", linewidth = 0.5) +
+  geom_segment(data = axis_lines_pgs,
+               aes(x = 0, xend = 0, y = y_start, yend = y_end),
+               arrow = arrow(length = unit(0.3, "cm"), type = "closed", angle = 10),
+               color = "gray50", linewidth = 0.5) +
   scale_linetype_manual(values = c("DZ" = "dotted", "MZ & DZ" = "solid")) +
   scale_color_manual(values = c("red", "blue")) +
   labs(color = "Modeled Source of\nAC Covariance") +
-  theme_minimal(base_family = "CMU Serif")
+  theme_minimal(base_family = "CMU Serif") +
+  theme(legend.text = element_text(size = 13),
+        legend.title = element_text(size = 13),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 13),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text = element_text(size = 12))
+plot4
 
 # Prepare sample data
 sample_data <- sample_power %>%
@@ -189,7 +231,7 @@ common_sample_sizes <- sample_data_long %>%
 
 sample_data_long <- sample_data_long %>%
   filter(`Sample Size` %in% common_sample_sizes) %>%
-  filter(`Sample Size` %in% c(100, 10000, 20000, 30000, 40000, 50000))
+  filter(`Sample Size` %in% c(10000, 20000, 30000, 40000, 50000))
 
 plot6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
                              color = variable, shape = variable)) +
@@ -202,8 +244,28 @@ plot6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
        shape = "Modeled Source of\nAC Covariance") +
   scale_color_manual(values = colorRampPalette(c("red", "blue"))(4)) +
   scale_shape_manual(values = c(15, 17, 18, 19)) +
-  theme_minimal(base_family = "CMU Serif")
-
+  scale_x_continuous(limits = c(5000, 55000),
+                     breaks = seq(0, 55000, by = 10000),
+                     expand = expansion(mult = 0)) +
+  scale_y_continuous(limits = c(0, 0.7), expand = expansion(mult = 0)) +
+  theme_minimal(base_family = "CMU Serif") +
+  theme(
+    axis.line = element_line(color = "gray50", linewidth = 0.5),
+    axis.ticks = element_line(color = "gray50"),
+    axis.text = element_text(color = "black", size = 11),
+    axis.title = element_text(color = "black", size = 13),
+    axis.line.x =
+      element_line(arrow = arrow(length = unit(0.3, "cm"),
+                                 angle = 10,
+                                 type="closed")),
+    axis.line.y =
+      element_line(arrow = arrow(length = unit(0.3, "cm"),
+                                 angle = 10,
+                                 type="closed")),
+   legend.text = element_text(size = 11),
+   legend.title = element_text(size = 13)
+  )
+plot6
 
 # APPENDIX
 ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
@@ -406,15 +468,15 @@ jpeg("Figure2_2.jpg", width = 6, height = 2.5, units = "in", res = 600)
 print(plot2_2)
 dev.off()
 
-jpeg("Figure3.jpg", width = 7, height = 5, units = "in", res = 600)
+jpeg("Figure3.jpg", width = 8, height = 5, units = "in", res = 600)
 print(plot3)
 dev.off()
 
-jpeg("Figure4.jpg", width = 7, height = 5, units = "in", res = 300)
+jpeg("Figure4.jpg", width = 8, height = 5, units = "in", res = 300)
 print(plot4)
 dev.off()
 
-jpeg("Figure6.jpg", width = 6, height = 3, units = "in", res = 300)
+jpeg("Figure6.jpg", width = 8, height = 4, units = "in", res = 300)
 print(plot6)
 dev.off()
 
