@@ -251,7 +251,7 @@ Figure6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
   scale_x_continuous(limits = c(5000, 55000),
                      breaks = seq(0, 55000, by = 10000),
                      expand = expansion(mult = 0)) +
-  scale_y_continuous(limits = c(0, 0.7), expand = expansion(mult = 0)) +
+  scale_y_continuous(limits = c(0, 1), expand = expansion(mult = 0)) +
   theme_minimal(base_family = "CMU Serif") +
   theme(
     axis.line = element_line(color = "gray50", linewidth = 0.5),
