@@ -12,6 +12,8 @@ paper_estimates <- read.csv("paper_mx_estimates.csv")
 sample_power <- read.csv("sample_power.csv")
 sample_params <- read.csv("sample_params.csv")
 
+dz_power <- read.csv("paper_dz_power.csv")
+dz_params <- read.csv("paper_dz_estimates.csv")
 
 # RUNNING TEXT
 # Plot 2 - Statistical Power Relative to effect sizes for cultural transmission and sibling interaction
@@ -160,13 +162,13 @@ p4_mx_data <- paper_power %>%
   mutate(Variable = "Sibling Interaction", Sample = "MZ & DZ") %>%
   rename(Parameter = b, Power = p4)
 
-p7_mx_data <- paper_power %>%
+p7_mx_data <- dz_power %>%
   filter(b == 0) %>%
   dplyr::select("g", "p7", "PGS") %>%
   mutate(Variable = "Cultural Transmission", Sample = "DZ") %>%
   rename(Parameter = g, Power = p7)
 
-p8_mx_data <- paper_power %>%
+p8_mx_data <- dz_power %>%
   filter(g == 0) %>%
   dplyr::select("b", "p8", 'PGS') %>%
   mutate(Variable = "Sibling Interaction", Sample = "DZ") %>%
@@ -178,7 +180,7 @@ full_mx_data <- rbind(p3_mx_data, p4_mx_data, p7_mx_data, p8_mx_data) %>%
 axis_lines_pgs <- full_mx_data %>%
   group_by(PGS_percent) %>%
   summarise(x_start = 0, x_end = max(Parameter),
-    y_start = 0, y_end = 0.8) %>%
+    y_start = 0, y_end = 1) %>%
   ungroup()
 
 Figure5 <- ggplot(data = full_mx_data) +
@@ -234,24 +236,26 @@ common_sample_sizes <- sample_data_long %>%
   pull(`Sample Size`)
 
 sample_data_long <- sample_data_long %>%
-  filter(`Sample Size` %in% common_sample_sizes) %>%
-  filter(`Sample Size` %in% c(10000, 20000, 30000, 40000, 50000))
+  filter(`Sample Size` %in% common_sample_sizes)
+
+# %>%filter(`Sample Size` %in% c(10000, 20000, 30000, 40000, 50000))
 
 Figure6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
                              color = variable, shape = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
-       x = "Sample Size",
+       x = "Number of Twin Pairs",
        y = "Power",
        color = "Modeled Source of\nAC Covariance",
        shape = "Modeled Source of\nAC Covariance") +
   scale_color_manual(values = colorRampPalette(c("red", "blue"))(4)) +
   scale_shape_manual(values = c(15, 17, 18, 19)) +
-  scale_x_continuous(limits = c(5000, 55000),
-                     breaks = seq(0, 55000, by = 10000),
+  scale_x_continuous(limits = c(0, 27000),
+                     breaks = seq(0, 25000, by = 5000),
                      expand = expansion(mult = 0)) +
   scale_y_continuous(limits = c(0, 1), expand = expansion(mult = 0)) +
+  geom_hline(yintercept = 0.8, linetype = 2) +
   theme_minimal(base_family = "CMU Serif") +
   theme(
     axis.line = element_line(color = "gray50", linewidth = 0.5),
@@ -270,6 +274,18 @@ Figure6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
    legend.title = element_text(size = 13)
   )
 Figure6
+
+# Calculate PGS predictive power with respect to the phenotype
+gnome_pgs_pheno <- function(a = sqrt(.4), c = sqrt(.1), e = sqrt(.5),
+                            g = 0.03, b = 0.03, nloci = 100, npgsloci = 35,
+                            varA = 1, varC = 1, varE = 1) {
+  varA2 <- npgsloci/nloci
+  pgs_pheno_mz <- (2*g^2+a^2+b^2+a*b)*varA2/((2*g^2+a^2+b^2+a*b)*varA + c^2*varC + e^2*varE)
+  pgs_pheno_dz <- (2*g^2+a^2+b^2)*varA2/((2*g^2+a^2+b^2)*varA + c^2*varC + e^2*varE)
+  print(paste("MZ:", pgs_pheno_mz, "DZ:", pgs_pheno_dz))
+}
+
+gnome_pgs_pheno(npgsloci = 35)
 
 # Export
 # Save all plots as .jpgs
@@ -294,7 +310,7 @@ print(plot4)
 dev.off()
 
 jpeg("Figure6.jpg", width = 8, height = 4, units = "in", res = 300)
-print(plot6)
+print(Figure6)
 dev.off()
 
 # APPENDIX
@@ -504,6 +520,10 @@ dev.off()
 
 jpeg("Figure4.jpg", width = 8, height = 5, units = "in", res = 300)
 print(plot4)
+dev.off()
+
+jpeg("Figure5.jpg", width = 8, height = 5, units = "in", res = 300)
+print(Figure5)
 dev.off()
 
 jpeg("Figure6.jpg", width = 8, height = 4, units = "in", res = 300)

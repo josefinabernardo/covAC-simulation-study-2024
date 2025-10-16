@@ -38,18 +38,18 @@ write.csv(dz_estimates, file = "paper_dz_estimates.csv", row.names = TRUE)
 write.csv(dz_power, file = "paper_dz_power.csv", row.names = TRUE)
 
 # Varying sample size
-sample_sizes <- c(100, seq(10000, 50000, 10000))
+sample_sizes <- c(100, seq(1000, 25000, 2000))
 sample_sizes_dz <- sample_sizes/2
 
 unique_sample_sizes <- unique(c(sample_sizes, sample_sizes_dz))
 
 sample_list <- list()
 for (n in unique_sample_sizes) {
-   if (length(sample_list) < which(unique_sample_sizes == n)) {
-     result <- gnome_mx_simulation(nmz = n, ndz = n, ct = 0.03, si = 0.03, nloci = 100, npgsloci = 40)
-     sample_list <- append(sample_list, list(result))
-   }
- }
+  if (length(sample_list) < which(unique_sample_sizes == n)) {
+    result <- gnome_mx_simulation(nmz = n, ndz = n, a = sqrt(.4), c = sqrt(.1), e = sqrt(.5), ct = 0.03, si = 0.03, nloci = 100, npgsloci = 35)
+    sample_list <- append(sample_list, list(result))
+  }
+}
 
 # Extract power and parameters
 sample_power <- do.call(rbind, lapply(sample_list, `[[`, "power"))
@@ -57,3 +57,19 @@ sample_params <- do.call(rbind, lapply(sample_list, `[[`, "params"))
 
 write.csv(sample_power, "sample_power.csv", row.names = TRUE)
 write.csv(sample_params, "sample_params.csv", row.names = TRUE)
+
+# Tables
+table1 <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.05), si = seq(0,.1,.05),
+                               nloci = 100,
+                               npgsloci = 10)
+table1$power
+table1$params
+
+table3 <- gnomesims::gnome_mx_simulation(ct = seq(0,.1,.05), si = seq(0,.1,.05),
+                                         nloci = 100,
+                                         npgsloci = 10, nmz = 4000, ndz = 8000)
+library(tidyverse)
+table3$power |>
+  select(ndz, g, b, p5:p8, Sdz)
+table3$params |>
+  select(ndz, g, b, e5:e8, Sdz)
