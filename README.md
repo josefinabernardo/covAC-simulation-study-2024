@@ -5,7 +5,7 @@ Data analysis files belonging to a simulation study on detecting cultural transm
 **covAC-simulation-study-2024.Rproj** - R Project of the repository
  
 # R Files:
-**create-datasets-final-version.R** - Creates simulated data sets using the corresponding functions of gnomesims.
+**create-datasets-final-version.R** - Creates data files using the corresponding functions of gnomesims.
 **plots-submission.R** - Creates plots based on the data files.
  
 # CSV Files:
