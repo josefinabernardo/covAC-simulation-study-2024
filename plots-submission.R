@@ -12,6 +12,8 @@ paper_estimates <- read.csv("paper_mx_estimates.csv")
 sample_power <- read.csv("sample_power.csv")
 sample_params <- read.csv("sample_params.csv")
 
+dz_power <- read.csv("paper_dz_power.csv")
+dz_params <- read.csv("paper_dz_estimates.csv")
 
 # RUNNING TEXT
 # Plot 2 - Statistical Power Relative to effect sizes for cultural transmission and sibling interaction
@@ -88,23 +90,17 @@ plot2_int_1 <- plot_grid(part1, part2, ncol = 2, align = "hv")
 plot2_int_2 <- plot_grid(part3, part4, ncol = 2, align = "hv")
 plot2_int <- plot_grid(part1, part2, part3, part4, ncol = 2, align = "hv")
 
-plot2_1 <- ggdraw() +
+Figure2 <- ggdraw() +
   draw_plot(plot2_int_1, x = 0.05, y = 0.05, width = 0.95, height = 0.95) +
   draw_label("Cultural Transmission", x = 0.5, y = 0, vjust = -0.5, fontfamily = "CMU Serif") +
   draw_label("Sibling Interaction", x = 0, y = 0.5, angle = 90, vjust = 1.5, fontfamily = "CMU Serif")
-plot2_1
+Figure2
 
-plot2_2 <- ggdraw() +
+Figure3 <- ggdraw() +
   draw_plot(plot2_int_2, x = 0.05, y = 0.05, width = 0.95, height = 0.95) +
   draw_label("Cultural Transmission", x = 0.5, y = 0, vjust = -0.5, fontfamily = "CMU Serif") +
   draw_label("Sibling Interaction", x = 0, y = 0.5, angle = 90, vjust = 1.5, fontfamily = "CMU Serif")
-plot2_2
-
-plot2 <- ggdraw() +
-  draw_plot(plot2_int, x = 0.05, y = 0.05, width = 0.95, height = 0.95) +
-  draw_label("Cultural Transmission (CT)", x = 0.5, y = 0, vjust = -0.5, fontfamily = "CMU Serif") +
-  draw_label("Sibling Interaction (SI)", x = 0, y = 0.5, angle = 90, vjust = 1.5, fontfamily = "CMU Serif")
-plot2
+Figure3
 
 #  labs(x = "Cultural Transmission", y = "Sibling Interaction", fill = "Power")
 
@@ -130,7 +126,7 @@ axis_lines_mzdz <- mx_mzdz_data %>%
             y_start = 0, y_end = 0.7) %>%
   ungroup()
 
-plot3 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable)) +
+Figure4 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, color = Variable)) +
   geom_line(linewidth = 0.8) +
   geom_point(size = 1.5) +
   facet_wrap(~PGS_percent) +
@@ -151,35 +147,45 @@ plot3 <- ggplot(data = mx_mzdz_data, mapping = aes(x = Confounder, y = Power, co
         axis.title = element_text(size = 13),
         axis.text.x = element_text(angle = 45, hjust = 1),
         strip.text = element_text(size = 12))
-plot3
+Figure4
 
-# Plot 4 - Type I Error Rate for Four Different Strengths of PGS Predictive Power in the MZ & DZ vs. DZ-only Sample
-p5_mx_data <- paper_power %>%
-  filter(g == 0) %>%
-  dplyr::select("b", "p5", "PGS") %>%
-  mutate(Variable = "Cultural Transmission", Sample = "DZ") %>%
-  rename(Confounder = b, Power = p5)
-
-p6_mx_data <- paper_power %>%
+# Plot 5 - Type I Error Rate for Four Different Strengths of PGS Predictive Power in the MZ & DZ vs. DZ-only Sample
+p3_mx_data <- paper_power %>%
   filter(b == 0) %>%
-  dplyr::select("g", "p6", 'PGS') %>%
+  dplyr::select("g", "p3", "PGS") %>%
+  mutate(Variable = "Cultural Transmission", Sample = "MZ & DZ") %>%
+  rename(Parameter = g, Power = p3)
+
+p4_mx_data <- paper_power %>%
+  filter(g == 0) %>%
+  dplyr::select("b", "p4", 'PGS') %>%
+  mutate(Variable = "Sibling Interaction", Sample = "MZ & DZ") %>%
+  rename(Parameter = b, Power = p4)
+
+p7_mx_data <- dz_power %>%
+  filter(b == 0) %>%
+  dplyr::select("g", "p7", "PGS") %>%
+  mutate(Variable = "Cultural Transmission", Sample = "DZ") %>%
+  rename(Parameter = g, Power = p7)
+
+p8_mx_data <- dz_power %>%
+  filter(g == 0) %>%
+  dplyr::select("b", "p8", 'PGS') %>%
   mutate(Variable = "Sibling Interaction", Sample = "DZ") %>%
-  rename(Confounder = g, Power = p6)
+  rename(Parameter = b, Power = p8)
 
-mx_dz_data <- rbind(p5_mx_data, p6_mx_data) %>%
+full_mx_data <- rbind(p3_mx_data, p4_mx_data, p7_mx_data, p8_mx_data) %>%
   mutate(PGS_percent = factor(scales::percent(PGS), levels = c("2%", "5%", "10%", "15%")))
-
-full_mx_data <- rbind(mx_mzdz_data, mx_dz_data)
 
 axis_lines_pgs <- full_mx_data %>%
   group_by(PGS_percent) %>%
-  summarise(x_start = 0, x_end = max(Confounder),
-    y_start = 0, y_end = 0.75) %>%
+  summarise(x_start = 0, x_end = max(Parameter),
+    y_start = 0, y_end = 1) %>%
   ungroup()
 
-plot4 <- ggplot(data = full_mx_data) +
-  geom_line(linewidth = 0.8, mapping = aes(x = Confounder, y = Power, color = Variable, linetype = Sample)) +
-  geom_point(size = 1.5, mapping = aes(x = Confounder, y = Power, color = Variable)) +
+Figure5 <- ggplot(data = full_mx_data) +
+  geom_line(linewidth = 0.8, mapping = aes(x = Parameter, y = Power, color = Variable, linetype = Sample)) +
+  geom_point(size = 1.5, mapping = aes(x = Parameter, y = Power, color = Variable)) +
   facet_wrap(~PGS_percent) +
   geom_segment(data = axis_lines_pgs,
                aes(x = x_start, xend = x_end, y = 0, yend = 0),
@@ -199,7 +205,7 @@ plot4 <- ggplot(data = full_mx_data) +
         axis.title = element_text(size = 13),
         axis.text.x = element_text(angle = 45, hjust = 1),
         strip.text = element_text(size = 12))
-plot4
+Figure5
 
 # Prepare sample data
 sample_data <- sample_power %>%
@@ -230,24 +236,26 @@ common_sample_sizes <- sample_data_long %>%
   pull(`Sample Size`)
 
 sample_data_long <- sample_data_long %>%
-  filter(`Sample Size` %in% common_sample_sizes) %>%
-  filter(`Sample Size` %in% c(10000, 20000, 30000, 40000, 50000))
+  filter(`Sample Size` %in% common_sample_sizes)
 
-plot6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
+# %>%filter(`Sample Size` %in% c(10000, 20000, 30000, 40000, 50000))
+
+Figure6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
                              color = variable, shape = variable)) +
   geom_line() +
   geom_point() +
   labs(title = NULL,
-       x = "Sample Size",
+       x = "Number of Twin Pairs",
        y = "Power",
        color = "Modeled Source of\nAC Covariance",
        shape = "Modeled Source of\nAC Covariance") +
   scale_color_manual(values = colorRampPalette(c("red", "blue"))(4)) +
   scale_shape_manual(values = c(15, 17, 18, 19)) +
-  scale_x_continuous(limits = c(5000, 55000),
-                     breaks = seq(0, 55000, by = 10000),
+  scale_x_continuous(limits = c(0, 27000),
+                     breaks = seq(0, 25000, by = 5000),
                      expand = expansion(mult = 0)) +
   scale_y_continuous(limits = c(0, 1), expand = expansion(mult = 0)) +
+  geom_hline(yintercept = 0.8, linetype = 2) +
   theme_minimal(base_family = "CMU Serif") +
   theme(
     axis.line = element_line(color = "gray50", linewidth = 0.5),
@@ -265,7 +273,45 @@ plot6 <- ggplot(sample_data_long, aes(x = `Sample Size`, y = value,
    legend.text = element_text(size = 11),
    legend.title = element_text(size = 13)
   )
-plot6
+Figure6
+
+# Calculate PGS predictive power with respect to the phenotype
+gnome_pgs_pheno <- function(a = sqrt(.4), c = sqrt(.1), e = sqrt(.5),
+                            g = 0.03, b = 0.03, nloci = 100, npgsloci = 35,
+                            varA = 1, varC = 1, varE = 1) {
+  varA2 <- npgsloci/nloci
+  pgs_pheno_mz <- (2*g^2+a^2+b^2+a*b)*varA2/((2*g^2+a^2+b^2+a*b)*varA + c^2*varC + e^2*varE)
+  pgs_pheno_dz <- (2*g^2+a^2+b^2)*varA2/((2*g^2+a^2+b^2)*varA + c^2*varC + e^2*varE)
+  print(paste("MZ:", pgs_pheno_mz, "DZ:", pgs_pheno_dz))
+}
+
+gnome_pgs_pheno(npgsloci = 35)
+
+# Export
+# Save all plots as .jpgs
+jpeg("Figure2.jpg", width = 6, height = 4, units = "in", res = 600)
+print(plot2)
+dev.off()
+
+jpeg("Figure2_1.jpg", width = 6, height = 2.5, units = "in", res = 600)
+print(plot2_1)
+dev.off()
+
+jpeg("Figure2_2.jpg", width = 6, height = 2.5, units = "in", res = 600)
+print(plot2_2)
+dev.off()
+
+jpeg("Figure3.jpg", width = 8, height = 5, units = "in", res = 600)
+print(plot3)
+dev.off()
+
+jpeg("Figure4.jpg", width = 8, height = 5, units = "in", res = 300)
+print(plot4)
+dev.off()
+
+jpeg("Figure6.jpg", width = 8, height = 4, units = "in", res = 300)
+print(Figure6)
+dev.off()
 
 # APPENDIX
 ext_power <- read.csv("2024-06-04_mx_power_ext.csv")
@@ -474,6 +520,10 @@ dev.off()
 
 jpeg("Figure4.jpg", width = 8, height = 5, units = "in", res = 300)
 print(plot4)
+dev.off()
+
+jpeg("Figure5.jpg", width = 8, height = 5, units = "in", res = 300)
+print(Figure5)
 dev.off()
 
 jpeg("Figure6.jpg", width = 8, height = 4, units = "in", res = 300)
